@@ -16,7 +16,7 @@
 |---|---|---|
 | 0 Scaffold + frozen types | done | `6253994` — Vite/React, `types/chat.ts`, brown tokens |
 | 1 Theme / UI kit | not started | tokens exist; Card/Kpi/charts not built |
-| 2 Parser | in progress | parallel track |
+| 2 Parser | done | 28 tests; linear URL matcher (Python IS_URL is ReDoS in JS); multiline = one message |
 | 3 Metrics + aggregations | done | 90 tests; reply delay from previous burst *end* (plan test over first-stamp prose) |
 | 4 Filter bar | not started | |
 | 5 Landing + upload | not started | |
