@@ -1,0 +1,44 @@
+1/1/24, 09:00 - Ada created group "Trip"
+1/1/24, 09:00 - You were added
+1/1/24, 09:01 - Ada: welcome everyone
+1/1/24, 09:02 - Bob: hey
+1/1/24, 09:03 - Cy: hi
+1/1/24, 09:04 - Dee: hello
+1/1/24, 09:05 - Eve: present
+1/1/24, 09:06 - Fay: here
+1/1/24, 10:00 - Ada: flights?
+1/1/24, 10:05 - Bob: <Media omitted>
+1/1/24, 10:06 - Cy: looks good
+1/1/24, 11:00 - Dee: I can drive
+1/1/24, 11:30 - Eve: hotel next
+1/1/24, 12:00 - Fay: budget
+1/2/24, 09:00 - Ada: packing list
+1/2/24, 09:10 - Bob: snacks
+1/2/24, 09:20 - Cy: sunscreen
+1/2/24, 18:00 - Dee: This message was deleted
+1/3/24, 08:00 - Eve: taxi at 8
+1/3/24, 08:01 - Fay: omw
+1/3/24, 08:02 - Ada: see you
+1/4/24, 20:00 - Bob: photos later
+1/4/24, 20:05 - Cy: 🎉
+1/5/24, 10:00 - Dee: maps https://example.com/map
+1/5/24, 10:10 - Eve: thanks
+1/6/24, 12:00 - Fay: lunch
+1/6/24, 12:01 - Ada: yes
+1/7/24, 19:00 - Bob: dinner votes
+1/7/24, 19:02 - Cy: pizza
+1/8/24, 09:00 - Dee: museum
+1/8/24, 09:30 - Eve: skip
+1/9/24, 15:00 - Fay: beach
+1/9/24, 15:10 - Ada: +1
+1/10/24, 21:00 - Bob left
+1/11/24, 10:00 - Cy: quieter now
+1/11/24, 10:05 - Dee: still five of us
+1/12/24, 10:00 - Eve: souvenirs
+1/12/24, 10:02 - Fay: ok
+1/13/24, 10:00 - Ada: home stretch
+1/13/24, 10:03 - Cy: bags
+1/14/24, 10:00 - Dee: airport
+1/14/24, 10:10 - Eve: gate
+1/15/24, 10:00 - Fay: landed
+1/15/24, 10:05 - Ada: thanks all

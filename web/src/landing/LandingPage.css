@@ -1,0 +1,33 @@
+.landing h1 {
+  font-size: var(--text-hero);
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.landing .lede {
+  color: var(--ink-muted);
+  margin: 0 0 16px;
+  max-width: 40rem;
+}
+
+.privacy {
+  font-size: var(--text-md);
+  margin: 0 0 24px;
+  max-width: 36rem;
+}
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error {
+  color: var(--danger);
+  font-size: var(--text-sm);
+}
+
+.status {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}

@@ -15,17 +15,17 @@
 | Task | Status | Notes |
 |---|---|---|
 | 0 Scaffold + frozen types | done | `6253994` — Vite/React, `types/chat.ts`, brown tokens |
-| 1 Theme / UI kit | not started | tokens exist; Card/Kpi/charts not built |
+| 1 Theme / UI kit | done | Card/Kpi/Button, ChartTheme, parchment tokens |
 | 2 Parser | done | 28 tests; linear URL matcher (Python IS_URL is ReDoS in JS); multiline = one message |
 | 3 Metrics + aggregations | done | 90 tests; reply delay from previous burst *end* (plan test over first-stamp prose) |
-| 4 Filter bar | not started | |
-| 5 Landing + upload | not started | |
-| 6 Chart primitives | not started | |
-| 7 Dashboard shell | not started | |
-| 8 Words / emojis / media | not started | |
-| 9 Response time UI | not started | |
-| 10 Fixtures, Playwright, Pages | not started | |
-| 11 Integration | not started | |
+| 4 Filter bar | done | FilterProvider + FilterBar |
+| 5 Landing + upload | done | client-side `.txt` only |
+| 6 Chart primitives | done | TrendChart, RankBars, HeatmapGrid |
+| 7 Dashboard shell | done | 1:1 vs group, Entire export strip |
+| 8 Words / emojis / media | done | english + indonesian stopwords |
+| 9 Response time UI | done | ReplySection |
+| 10 Fixtures, Playwright, Pages | done | samples, e2e, `.github/workflows/web.yml` |
+| 11 Integration | done | App landing vs dashboard |
 | Extra: Python via uv | done | `pyproject.toml`, `uv.lock`, CI `uv sync --frozen` |
 
 ## Global Constraints

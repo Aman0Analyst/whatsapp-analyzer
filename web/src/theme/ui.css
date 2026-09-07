@@ -1,0 +1,71 @@
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgba(61, 44, 33, 0.06);
+  padding: 16px;
+}
+
+.btn {
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--surface);
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-label,
+.kpi-hint {
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+
+.kpi-value {
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.select {
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.select:focus,
+.btn:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

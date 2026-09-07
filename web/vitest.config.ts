@@ -6,5 +6,8 @@ export default defineConfig({
   base: "/whatsapp-analyzer/",
   test: {
     environment: "node",
+    environmentMatchGlobs: [["**/*.test.tsx", "jsdom"]],
+    setupFiles: ["./src/test/setup.ts"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**"],
   },
 });

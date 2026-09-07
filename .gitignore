@@ -19,6 +19,9 @@ ipython_config.py
 # Web app
 web/node_modules
 web/dist
+web/test-results
+web/playwright-report
+web/blob-report
 
 # Agent scratch (progress lives in docs/superpowers/plans/)
 .superpowers/
