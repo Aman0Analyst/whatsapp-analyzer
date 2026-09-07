@@ -17,7 +17,7 @@
 | 0 Scaffold + frozen types | done | `6253994` — Vite/React, `types/chat.ts`, brown tokens |
 | 1 Theme / UI kit | not started | tokens exist; Card/Kpi/charts not built |
 | 2 Parser | in progress | parallel track |
-| 3 Metrics + aggregations | in progress | parallel track |
+| 3 Metrics + aggregations | done | 90 tests; reply delay from previous burst *end* (plan test over first-stamp prose) |
 | 4 Filter bar | not started | |
 | 5 Landing + upload | not started | |
 | 6 Chart primitives | not started | |
