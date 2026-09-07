@@ -1,0 +1,30 @@
+/* web/src/theme/tokens.css — copy verbatim */
+:root {
+  --bg: #f7f1ea;
+  --surface: #fffbf7;
+  --surface-2: #f3e8dc;
+  --ink: #3d2c21;
+  --ink-muted: #7a6555;
+  --border: #e4d5c3;
+  --accent: #8b5e3c;
+  --accent-hover: #6f4a2f;
+  --danger: #b85c38;
+  --focus: #c4a484;
+  --series-1: #5c4033;
+  --series-2: #8b5e3c;
+  --series-3: #a67c52;
+  --series-4: #c4a484;
+  --series-5: #6b4f3a;
+  --series-6: #9c7a5a;
+  --series-7: #d4b896;
+  --series-8: #4a3226;
+  --radius: 16px;
+  --font: "Source Sans 3", "Segoe UI", sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-hero: 2.25rem;
+  --leading: 1.5;
+}
