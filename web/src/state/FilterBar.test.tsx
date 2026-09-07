@@ -22,7 +22,7 @@ describe("FilterBar", () => {
       </FilterProvider>,
     );
     expect(screen.getByTestId("grain")).toHaveTextContent("month");
-    await user.selectOptions(screen.getByLabelText(/time grain/i), "week");
+    await user.selectOptions(screen.getByRole("combobox", { name: /time grain/i }), "week");
     expect(screen.getByTestId("grain")).toHaveTextContent("week");
   });
 

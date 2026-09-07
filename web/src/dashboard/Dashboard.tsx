@@ -11,9 +11,11 @@ import {
 } from "../metrics/volume";
 import { sessionStarts } from "../metrics/sessions";
 import { ReplySection } from "../reply/ReplySection";
+import { formatDuration } from "../reply/formatDuration";
 import { FilterBar } from "../state/FilterBar";
 import { useFilter } from "../state/FilterProvider";
-import { Button, Kpi, Page } from "../theme/UiKit";
+import { Button, Page, SectionCard, StatCard } from "../theme/UiKit";
+import { senderColors } from "../theme/senderColor";
 import type { ParsedMessage } from "../types/chat";
 import { EntireExportStrip } from "./EntireExportStrip";
 import { HeatmapSection } from "./HeatmapSection";
@@ -21,12 +23,11 @@ import { RankSection } from "./RankSection";
 import { VolumeSection } from "./VolumeSection";
 import "./dashboard.css";
 
+const MIN_REPLY_SAMPLE = 5;
+
 function formatSeconds(seconds: number | null): string {
   if (seconds === null || Number.isNaN(seconds)) return "—";
-  if (seconds < 60) return `${Math.round(seconds)}s`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-  const hours = seconds / 3600;
-  return `${hours.toFixed(hours >= 10 ? 0 : 1)}h`;
+  return formatDuration(seconds);
 }
 
 export function Dashboard({
@@ -46,49 +47,124 @@ export function Dashboard({
     [messages, filter],
   );
   const medianReply =
-    replies.length >= 5 ? median(replies.map((e) => e.delaySeconds)) : null;
+    replies.length >= MIN_REPLY_SAMPLE ? median(replies.map((e) => e.delaySeconds)) : null;
   const isPair = fileSenders.length === 2;
   const starts = isPair ? sessionStarts(filtered) : [];
+  const colors = senderColors(fileSenders);
+
+  const span = dateSpan(messages);
+  const years = span
+    ? span.start.getFullYear() === span.end.getFullYear()
+      ? `${span.start.getFullYear()}`
+      : `${span.start.getFullYear()}–${span.end.getFullYear()}`
+    : "no dates";
+  const kind = isPair ? "Two-person chat" : "Group chat";
 
   return (
-    <Page>
-      <header className="dash-head">
-        <div>
-          <h1>WhatsApp Analyzer</h1>
-          <p className="subtitle">{isPair ? "Two-person chat" : "Group chat"}</p>
+    <>
+      <header className="appbar">
+        <div className="appbar-inner">
+          <div className="appbar-mark">
+            <span className="appbar-logo" aria-hidden="true">
+              WA
+            </span>
+            <div>
+              <h1 className="appbar-title">WhatsApp Analyzer</h1>
+              <p className="appbar-sub">
+                {kind} · {fileSenders.length} {fileSenders.length === 1 ? "person" : "people"} ·{" "}
+                {years}
+              </p>
+            </div>
+          </div>
+          <div className="appbar-actions">
+            <Button variant="ghost" type="button" onClick={onReset}>
+              Analyze another file
+            </Button>
+          </div>
         </div>
-        <Button variant="ghost" type="button" onClick={onReset}>
-          Analyze another file
-        </Button>
       </header>
-      <EntireExportStrip messages={messages} warnings={warnings} />
-      <FilterBar />
-      <div className="kpi-row">
-        <Kpi label="Messages" value={String(messageCount(filtered))} hint="this range" />
-        <Kpi label="Msgs / day" value={messagesPerDay(filtered).toFixed(1)} hint="this range" />
-        <Kpi label="Unique senders" value={String(uniqueSenders(filtered).length)} hint="this range" />
-        <Kpi label="Median reply" value={formatSeconds(medianReply)} hint="response time" />
-      </div>
-      <div className="grid-2">
-        <VolumeSection messages={filtered} />
-        <RankSection messages={filtered} />
-      </div>
-      <HeatmapSection messages={filtered} />
-      {isPair ? (
-        <div className="kpi-row">
-          {starts.map((row) => (
-            <Kpi
-              key={row.sender}
-              label={`${row.sender} starts`}
-              value={`${row.n}`}
-              hint={`${Math.round(row.share * 100)}% of sessions`}
-            />
-          ))}
+
+      <Page>
+        <EntireExportStrip messages={messages} warnings={warnings} />
+        <FilterBar />
+
+        <div className="stat-row">
+          <StatCard
+            label="Messages"
+            value={messageCount(filtered).toLocaleString()}
+            hint="in the filtered range"
+            metric="messages"
+          />
+          <StatCard
+            label="Messages / day"
+            value={messagesPerDay(filtered).toFixed(1)}
+            hint="averaged over the range"
+            metric="perDay"
+          />
+          <StatCard
+            label="People talking"
+            value={String(uniqueSenders(filtered).length)}
+            hint={`of ${fileSenders.length} in the file`}
+            metric="senders"
+          />
+          <StatCard
+            label="Median reply"
+            value={formatSeconds(medianReply)}
+            hint={
+              medianReply === null
+                ? `needs ${MIN_REPLY_SAMPLE}+ replies`
+                : `across ${replies.length.toLocaleString()} replies`
+            }
+            metric="medianReply"
+            align="end"
+          />
         </div>
-      ) : null}
-      <ContentSection messages={filtered} />
-      <ReplySection messages={messages} uniqueSenderCount={fileSenders.length} />
-      {dateSpan(filtered) ? null : <p className="muted">No messages in this filter.</p>}
-    </Page>
+
+        {dateSpan(filtered) ? null : (
+          <p className="callout">
+            No messages match the current filters. Widen the date range or re-tick people above.
+          </p>
+        )}
+
+        <div className="grid-2">
+          <VolumeSection messages={filtered} />
+          <RankSection messages={filtered} />
+        </div>
+
+        <HeatmapSection messages={filtered} />
+
+        {isPair && starts.length > 0 ? (
+          <SectionCard
+            title="Who starts conversations"
+            description="After a quiet stretch, who sends the first message."
+            metric="sessionStarts"
+          >
+            <div className="stat-row stat-row-tight">
+              {starts.map((row) => (
+                <div className="person" key={row.sender}>
+                  <span className="person-head">
+                    <span
+                      className="person-swatch"
+                      style={{ background: `var(${colors.get(row.sender) ?? "--series-1"})` }}
+                    />
+                    <span className="person-name" title={row.sender}>
+                      {row.sender}
+                    </span>
+                  </span>
+                  <span className="person-value">{Math.round(row.share * 100)}%</span>
+                  <span className="person-meta">
+                    {row.n.toLocaleString()} of{" "}
+                    {starts.reduce((sum, s) => sum + s.n, 0).toLocaleString()} conversations
+                  </span>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        ) : null}
+
+        <ContentSection messages={filtered} />
+        <ReplySection messages={messages} uniqueSenderCount={fileSenders.length} />
+      </Page>
+    </>
   );
 }

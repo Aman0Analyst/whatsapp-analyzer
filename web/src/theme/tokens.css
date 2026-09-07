@@ -1,30 +1,75 @@
-/* web/src/theme/tokens.css — copy verbatim */
+/* web/src/theme/tokens.css — warm parchment analytics theme */
 :root {
   --bg: #f7f1ea;
-  --surface: #fffbf7;
+  --bg-tint: #f1e8de;
+  --surface: #fffdfa;
   --surface-2: #f3e8dc;
-  --ink: #3d2c21;
+  --surface-3: #ebdccc;
+  --ink: #2f211a;
+  --ink-2: #55402f;
   --ink-muted: #7a6555;
+  --ink-subtle: #9c8877;
   --border: #e4d5c3;
+  --border-strong: #d3bda5;
   --accent: #8b5e3c;
   --accent-hover: #6f4a2f;
+  --accent-soft: #f0e2d3;
+  --accent-ring: rgba(139, 94, 60, 0.18);
   --danger: #b85c38;
-  --focus: #c4a484;
-  --series-1: #5c4033;
-  --series-2: #8b5e3c;
-  --series-3: #a67c52;
-  --series-4: #c4a484;
-  --series-5: #6b4f3a;
-  --series-6: #9c7a5a;
-  --series-7: #d4b896;
-  --series-8: #4a3226;
+  --danger-soft: #f8e5dc;
+  --warn: #a9762a;
+  --warn-soft: #fbeed6;
+  --focus: #8b5e3c;
+
+  /* Categorical palette: warm-centred but hue-separated so many senders stay
+     tellable apart on one chart. */
+  --series-1: #9c4f2c;
+  --series-2: #c8862c;
+  --series-3: #7b5e3b;
+  --series-4: #b45a72;
+  --series-5: #5f7d8c;
+  --series-6: #8a6aa8;
+  --series-7: #c9a05e;
+  --series-8: #4b3527;
+
+  /* Sequential ramp for the activity heatmap. */
+  --ramp-0: #f4ece2;
+  --ramp-1: #ecd9bf;
+  --ramp-2: #ddb383;
+  --ramp-3: #c2803f;
+  --ramp-4: #9c4f2c;
+  --ramp-5: #5c2f19;
+
   --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  --shadow-sm: 0 1px 2px rgba(61, 44, 33, 0.06);
+  --shadow-md: 0 1px 2px rgba(61, 44, 33, 0.05), 0 4px 12px rgba(61, 44, 33, 0.06);
+  --shadow-lg: 0 2px 4px rgba(61, 44, 33, 0.06), 0 12px 32px rgba(61, 44, 33, 0.1);
+
   --font: "Source Sans 3", "Segoe UI", sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
   --text-lg: 1.25rem;
   --text-xl: 1.75rem;
+  --text-2xl: 2.25rem;
   --text-hero: 2.25rem;
+  --text-stat: 2rem;
   --leading: 1.5;
+  --leading-tight: 1.2;
+  --tracking-caps: 0.06em;
+
+  --page-max: 1280px;
 }

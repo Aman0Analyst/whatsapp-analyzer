@@ -1,9 +1,31 @@
-import { useState } from "react";
+import { useState, type DragEvent } from "react";
 import type { ParsedMessage } from "../types/chat";
 import { parseExport } from "../parse/parseExport";
-import { Button, Page } from "../theme/UiKit";
+import { Page } from "../theme/UiKit";
 import { readChatFile } from "./readChatFile";
 import "./LandingPage.css";
+
+const FEATURES = [
+  {
+    title: "Who talks",
+    body: "Message share per person, and who breaks the silence to start a conversation.",
+  },
+  {
+    title: "When",
+    body: "Volume by day, week, month or quarter, plus a weekday-by-hour activity heatmap.",
+  },
+  {
+    title: "How fast",
+    body: "Median and P90 reply times per person, with a window that separates replies from new chats.",
+  },
+];
+
+const STEPS = [
+  "Open the chat in WhatsApp.",
+  "Tap the chat name, then Export chat.",
+  "Choose Without Media.",
+  "Save the .txt and drop it below.",
+];
 
 export function LandingPage({
   onParsed,
@@ -12,6 +34,7 @@ export function LandingPage({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   const onFile = async (file: File | undefined) => {
     if (!file) return;
@@ -32,36 +55,84 @@ export function LandingPage({
     onParsed(messages, warnings);
   };
 
+  const onDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragging(false);
+    void onFile(event.dataTransfer.files?.[0]);
+  };
+
   return (
     <Page>
       <div className="landing">
-        <h1>WhatsApp Analyzer</h1>
+        <div className="landing-brand">
+          <span className="appbar-logo" aria-hidden="true">
+            WA
+          </span>
+          <h1>WhatsApp Analyzer</h1>
+        </div>
+        <span className="eyebrow">Runs entirely in your browser</span>
+        <h2 className="landing-hero">Read the story in your chat history</h2>
         <p className="lede">
-          Charts for who talks, when, and how fast people reply. The file never leaves this
-          browser.
+          Drop a WhatsApp export to see who talks, when the chat comes alive, and how fast people
+          reply — with every number explained.
         </p>
         <p className="privacy">
-          Privacy: your export stays on this device. We read it with FileReader only — nothing is
-          uploaded, and closing the tab forgets the chat.
+          <strong>Privacy:</strong> your export stays on this device. We read it with FileReader
+          only — nothing is uploaded, and closing the tab forgets the chat.
         </p>
-        <div className="drop">
-          <label htmlFor="chat-file">Choose a .txt export</label>
+
+        <div
+          className={`drop${dragging ? " drop-active" : ""}`}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+        >
+          <span className="drop-icon" aria-hidden="true">
+            ↑
+          </span>
+          <label className="drop-title" htmlFor="chat-file">
+            Choose a .txt export
+          </label>
+          <span className="drop-hint">or drag and drop it here</span>
           <input
             id="chat-file"
+            className="drop-input"
             type="file"
             accept=".txt,text/plain"
             onChange={(e) => void onFile(e.target.files?.[0])}
           />
-          <Button type="button" variant="ghost" onClick={() => document.getElementById("chat-file")?.click()}>
-            Choose file
-          </Button>
         </div>
+
         {status ? <p className="status">{status}</p> : null}
-        {error ? <p className="error">{error}</p> : null}
-        <p className="lede">
-          Export in WhatsApp with <strong>Without Media</strong>, then drop the .txt here. If you
-          received a .zip, unzip it first.
-        </p>
+        {error ? (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        <ul className="feature-grid">
+          {FEATURES.map((feature) => (
+            <li className="feature" key={feature.title}>
+              <h3>{feature.title}</h3>
+              <p>{feature.body}</p>
+            </li>
+          ))}
+        </ul>
+
+        <div className="how">
+          <h3>How to get the file</h3>
+          <ol className="how-steps">
+            {STEPS.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          <p className="how-note">
+            If you received a .zip, unzip it first — the analyzer reads the .txt inside.
+          </p>
+        </div>
       </div>
     </Page>
   );

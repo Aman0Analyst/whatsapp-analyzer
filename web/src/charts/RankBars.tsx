@@ -1,32 +1,49 @@
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { chartTheme } from "../theme/ChartTheme";
+import "./charts.css";
 
-export function RankBars({ rows }: { rows: { label: string; n: number }[] }) {
+export interface RankRow {
+  label: string;
+  n: number;
+  share?: number;
+  colorVar?: string;
+}
+
+/**
+ * Ranked horizontal bars in plain DOM. An SVG bar chart truncated the long
+ * phone-number labels a WhatsApp export uses, so the names live in the list
+ * itself and the bar is a background layer behind them.
+ */
+export function RankBars({ rows }: { rows: RankRow[] }) {
+  if (rows.length === 0) return <p className="empty">Nobody sent a message in this range.</p>;
+
+  const max = Math.max(...rows.map((row) => row.n));
+  const total = rows.reduce((sum, row) => sum + row.n, 0);
+
   return (
-    <div>
-      <ul className="word-list">
-        {rows.map((row) => (
-          <li key={row.label}>
-            {row.label} <span className="muted">{row.n}</span>
+    <ol className="rank">
+      {rows.map((row, i) => {
+        const share = row.share ?? (total === 0 ? 0 : row.n / total);
+        return (
+          <li className="rank-row" key={row.label}>
+            <span className="rank-index">{i + 1}</span>
+            <span className="rank-track">
+              <span
+                className="rank-fill"
+                style={{
+                  width: `${Math.max(2, (row.n / max) * 100)}%`,
+                  background: `var(${row.colorVar ?? "--series-1"})`,
+                }}
+              />
+              <span className="rank-name" title={row.label}>
+                {row.label}
+              </span>
+            </span>
+            <span className="rank-value">
+              {row.n.toLocaleString()}
+              <span className="rank-share">{(share * 100).toFixed(share < 0.1 ? 1 : 0)}%</span>
+            </span>
           </li>
-        ))}
-      </ul>
-    <div style={{ width: "100%", height: Math.max(160, rows.length * 36) }}>
-      <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={160}>
-        <BarChart data={rows} layout="vertical" margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
-          <XAxis type="number" stroke={chartTheme.axis} tick={{ fill: chartTheme.axis, fontSize: 12 }} />
-          <YAxis
-            type="category"
-            dataKey="label"
-            width={96}
-            stroke={chartTheme.axis}
-            tick={{ fill: chartTheme.axis, fontSize: 12 }}
-          />
-          <Tooltip contentStyle={chartTheme.tooltip} />
-          <Bar dataKey="n" fill="var(--series-1)" radius={[0, 4, 4, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-    </div>
+        );
+      })}
+    </ol>
   );
 }

@@ -1,6 +1,8 @@
-import { dateSpan, uniqueSenders } from "../metrics/volume";
+import { dateSpan, messageCount, uniqueSenders } from "../metrics/volume";
 import type { ParsedMessage } from "../types/chat";
-import { Card } from "../theme/UiKit";
+import { Badge, Card, InfoTip } from "../theme/UiKit";
+
+const EXPORT_CAP = 40000;
 
 export function EntireExportStrip({
   messages,
@@ -14,24 +16,51 @@ export function EntireExportStrip({
   const range = span
     ? `${span.start.toLocaleDateString()} – ${span.end.toLocaleDateString()}`
     : "—";
+  const total = messageCount(messages);
+  const capped = messages.length >= EXPORT_CAP;
+
   return (
     <Card className="strip">
-      <div>
-        <div className="strip-label">Entire export</div>
-        <div>{range}</div>
+      <div className="strip-head">
+        <span className="strip-label">Entire export</span>
+        <InfoTip metric="exportSpan" />
+        <span className="strip-note">unfiltered baseline for the whole file</span>
       </div>
-      <div>
-        <div className="strip-label">Entire export · unique names</div>
-        <div>{names.length}</div>
-      </div>
-      <div>
-        <div className="strip-label">Entire export · messages</div>
-        <div>{messages.length}{messages.length >= 40000 ? " (export cap likely)" : ""}</div>
-      </div>
-      <div>
-        <div className="strip-label">Entire export · parse notes</div>
-        <div>{warnings.length ? warnings.join(" ") : "None"}</div>
-      </div>
+      <dl className="strip-grid">
+        <div className="strip-item">
+          <dt>Date range</dt>
+          <dd>{range}</dd>
+        </div>
+        <div className="strip-item">
+          <dt>People</dt>
+          <dd>{names.length}</dd>
+        </div>
+        <div className="strip-item">
+          <dt>Messages</dt>
+          <dd>
+            {total.toLocaleString()}
+            {capped ? (
+              <>
+                {" "}
+                <Badge tone="warn">export cap likely</Badge>
+              </>
+            ) : null}
+          </dd>
+        </div>
+        <div className="strip-item">
+          <dt>
+            Parse notes
+            <InfoTip metric="parseNotes" />
+          </dt>
+          <dd>
+            {warnings.length ? (
+              <span className="strip-warn">{warnings.join(" ")}</span>
+            ) : (
+              <span className="muted">Everything parsed cleanly</span>
+            )}
+          </dd>
+        </div>
+      </dl>
     </Card>
   );
 }

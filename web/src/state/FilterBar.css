@@ -1,27 +1,72 @@
 .filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: end;
-  margin: 16px 0 24px;
-}
-
-.filter-field {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: var(--text-sm);
-  color: var(--ink-muted);
+  gap: var(--space-4);
+}
+
+.filter-people-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .filter-people {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  color: var(--ink);
+  gap: var(--space-2);
+}
+
+.filter-people .check {
+  max-width: 15rem;
+}
+
+.filter-linkbtn {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-xs);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.filter-linkbtn:disabled {
+  color: var(--ink-subtle);
+  cursor: default;
+  text-decoration: none;
+}
+
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4) var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
 }
 
 .preset-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-1);
+}
+
+.hour-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hour-dash {
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
 }
