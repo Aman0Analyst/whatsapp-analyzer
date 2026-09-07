@@ -14,7 +14,7 @@
 
 | Task | Status | Notes |
 |---|---|---|
-| 0 Scaffold + frozen types | in progress | `web/` Vite app, `types/chat.ts`, brown tokens |
+| 0 Scaffold + frozen types | done | `6253994` — Vite/React, `types/chat.ts`, brown tokens |
 | 1 Theme / UI kit | not started | tokens exist; Card/Kpi/charts not built |
 | 2 Parser | in progress | parallel track |
 | 3 Metrics + aggregations | in progress | parallel track |
