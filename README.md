@@ -3,6 +3,8 @@ Analyze WhatsApp chat
 
 The script reads an exported WhatsApp chat and then extracts the data. You may need to install some packages before running it.
 
+Purpose, how to export a chat, CLI and planned web usage, and a pre-deploy test plan: [docs/PURPOSE-AND-USAGE.md](docs/PURPOSE-AND-USAGE.md).
+
 ##### Supported Analysis
 ----------------------
 - Chat Count
@@ -35,9 +37,10 @@ The script reads an exported WhatsApp chat and then extracts the data. You may n
 
 ### Requirements
 ----------------------
-- Python 3.6+
-```python
-pip install -r requirements.txt
+- Python 3.9+
+- [uv](https://docs.astral.sh/uv/)
+```
+uv sync
 ```
 ### Usage
 ----------------------
@@ -45,7 +48,8 @@ pip install -r requirements.txt
 $ git clone https://github.com/PetengDedet/WhatsApp-Analyzer.git
 
 $ cd WhatsApp-Analyzer
-$ python whatsapp_analyzer.py chat_example.txt --stopword indonesian 
+$ uv sync
+$ uv run python whatsapp_analyzer.py chat_example.txt --stopword indonesian 
 ```
 
 ```shell

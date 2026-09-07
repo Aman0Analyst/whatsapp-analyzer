@@ -12,3 +12,13 @@ ipython_config.py
 
 # VSCODE
 .vscode
+
+# Python virtualenv (uv)
+.venv/
+
+# Web app
+web/node_modules
+web/dist
+
+# Agent scratch (progress lives in docs/superpowers/plans/)
+.superpowers/
