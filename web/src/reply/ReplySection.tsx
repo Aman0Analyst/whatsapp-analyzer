@@ -5,7 +5,7 @@ import { useFilter } from "../state/FilterProvider";
 import { Badge, InfoTip, SectionCard } from "../theme/UiKit";
 import { senderColors } from "../theme/senderColor";
 import type { ParsedMessage } from "../types/chat";
-import { formatDuration, windowLabel } from "./formatDuration";
+import { formatDuration, statLabel, windowLabel } from "./formatDuration";
 import "../dashboard/dashboard.css";
 
 type SortKey = "sender" | "n" | "medianSeconds" | "p90Seconds";
@@ -15,8 +15,8 @@ const MIN_RELIABLE = 10;
 const COLUMNS: { key: SortKey; label: string; numeric: boolean; metric?: "medianReply" | "p90Reply" | "replyCount" }[] = [
   { key: "sender", label: "Person", numeric: false },
   { key: "n", label: "Replies", numeric: true, metric: "replyCount" },
-  { key: "medianSeconds", label: "Median", numeric: true, metric: "medianReply" },
-  { key: "p90Seconds", label: "P90", numeric: true, metric: "p90Reply" },
+  { key: "medianSeconds", label: "Typical", numeric: true, metric: "medianReply" },
+  { key: "p90Seconds", label: "Slow replies", numeric: true, metric: "p90Reply" },
 ];
 
 export function ReplySection({
@@ -80,7 +80,9 @@ export function ReplySection({
                   </span>
                 </span>
                 <span className="person-value">{formatDuration(row.medianSeconds)}</span>
-                <span className="person-meta">median · p90 {formatDuration(row.p90Seconds)}</span>
+                <span className="person-meta">
+                  typically · slow replies {formatDuration(row.p90Seconds)}
+                </span>
                 <span className="person-meta">
                   {thin ? (
                     <em>not enough replies ({row.n})</em>
@@ -97,7 +99,7 @@ export function ReplySection({
       {series.length > 0 ? (
         <>
           <h3 className="subhead">
-            {filter.durationStat} reply time per {filter.grain}
+            {statLabel(filter.durationStat)} reply time per {filter.grain}
             <InfoTip metric="durationStat" />
           </h3>
           <TrendChart series={series} grain={filter.grain} valueKind="duration" />

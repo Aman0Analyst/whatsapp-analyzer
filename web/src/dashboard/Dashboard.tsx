@@ -17,6 +17,7 @@ import { useFilter } from "../state/FilterProvider";
 import { Button, Page, SectionCard, StatCard } from "../theme/UiKit";
 import { senderColors } from "../theme/senderColor";
 import type { ParsedMessage } from "../types/chat";
+import type { DateOrder } from "../parse/parseExport";
 import { EntireExportStrip } from "./EntireExportStrip";
 import { HeatmapSection } from "./HeatmapSection";
 import { RankSection } from "./RankSection";
@@ -33,10 +34,12 @@ function formatSeconds(seconds: number | null): string {
 export function Dashboard({
   messages,
   warnings,
+  dateOrder = "dayFirst",
   onReset,
 }: {
   messages: ParsedMessage[];
   warnings: string[];
+  dateOrder?: DateOrder;
   onReset: () => void;
 }) {
   const { filter } = useFilter();
@@ -85,7 +88,7 @@ export function Dashboard({
       </header>
 
       <Page>
-        <EntireExportStrip messages={messages} warnings={warnings} />
+        <EntireExportStrip messages={messages} warnings={warnings} dateOrder={dateOrder} />
         <FilterBar />
 
         <div className="stat-row">
@@ -108,7 +111,7 @@ export function Dashboard({
             metric="senders"
           />
           <StatCard
-            label="Median reply"
+            label="Typical reply"
             value={formatSeconds(medianReply)}
             hint={
               medianReply === null

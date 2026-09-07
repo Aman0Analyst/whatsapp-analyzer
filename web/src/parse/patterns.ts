@@ -24,6 +24,14 @@ export const NBSP = "\u00a0";
 export const IS_STARTING_LINE =
   /^\[?(?<num1>\d{1,2})[/-](?<num2>\d{1,2})[/-](?<year>\d{2,4}),?\s(?<hour>\d{1,2})[:.](?<minute>\d{2})(?:[:.](?<second>\d{2}))?(?<ampm>\s?[ap]\.?m\.?)?\]?\s*-?\s*(?<rest>.*)$/i;
 
+/**
+ * Cheap probe for the leading date of a line, used to work out whether a file
+ * writes day or month first. Tolerates the direction marks BAD_CHARS strips so
+ * it can run before the line is cleaned.
+ */
+export const DATE_PREFIX =
+  /^[\u202a\u200e\u202c\s]*\[?(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/;
+
 /** `<contact or phone number>: <message>`; anything else on a starting line is an event. */
 export const IS_CHAT = /^(?<sender>[^:]+):\s?(?<body>.*)$/;
 

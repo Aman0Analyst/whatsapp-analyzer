@@ -1,5 +1,6 @@
 import type { DurationStat, TimeGrain } from "../types/chat";
 import { dateSpan } from "../metrics/volume";
+import { STAT_LABEL } from "../reply/formatDuration";
 import { Button, InfoTip, Select } from "../theme/UiKit";
 import { senderColors } from "../theme/senderColor";
 import { useFilter } from "./FilterProvider";
@@ -135,7 +136,7 @@ export function FilterBar() {
           >
             {STATS.map((stat) => (
               <option key={stat} value={stat}>
-                {stat}
+                {STAT_LABEL[stat]}
               </option>
             ))}
           </Select>

@@ -34,7 +34,7 @@ describe("starting line formats", () => {
     expect(messages[0].timestamp.getMinutes()).toBe(5);
   });
 
-  it("resolves ambiguous dates month-first and falls back to day-first", () => {
+  it("reads unambiguous dates whichever way round they are", () => {
     const { messages } = parseExport(
       "2/22/19, 14:01 - Ada: month first\n14/10/18, 11:16 - Ada: day first\n",
     );
@@ -46,6 +46,43 @@ describe("starting line formats", () => {
     expect(messages[1].timestamp.getFullYear()).toBe(2018);
     expect(messages[1].timestamp.getMonth()).toBe(9);
     expect(messages[1].timestamp.getDate()).toBe(14);
+  });
+
+  it("reads an ambiguous date day-first by default", () => {
+    const { messages, dateOrder } = parseExport("12/02/26, 10:00 - Ada: hi\n");
+    expect(dateOrder).toBe("dayFirst");
+    expect(messages[0].timestamp.getMonth()).toBe(1); // February, not December
+    expect(messages[0].timestamp.getDate()).toBe(12);
+  });
+
+  it("commits to month-first when the file proves that reading", () => {
+    const { messages, dateOrder } = parseExport(
+      "2/22/19, 10:00 - Ada: proof\n3/4/19, 10:00 - Ada: ambiguous\n",
+    );
+    expect(dateOrder).toBe("monthFirst");
+    // The ambiguous line follows the file's convention: March 4, not 3 April.
+    expect(messages[1].timestamp.getMonth()).toBe(2);
+    expect(messages[1].timestamp.getDate()).toBe(4);
+  });
+
+  it("commits to day-first when the file proves that reading", () => {
+    const { messages, dateOrder } = parseExport(
+      "22/2/19, 10:00 - Ada: proof\n3/4/19, 10:00 - Ada: ambiguous\n",
+    );
+    expect(dateOrder).toBe("dayFirst");
+    // 3 April, not March 4.
+    expect(messages[1].timestamp.getMonth()).toBe(3);
+    expect(messages[1].timestamp.getDate()).toBe(3);
+  });
+
+  it("keeps a day-first export inside its real span", () => {
+    // A DD/MM export that month-first parsing pushed into December.
+    const { messages } = parseExport(
+      "02/02/26, 20:23 - Ada: first\n12/02/26, 10:00 - Ada: middle\n07/09/26, 13:39 - Ada: last\n",
+    );
+    const months = messages.map((m) => m.timestamp.getMonth());
+    expect(Math.max(...months)).toBe(8); // September
+    expect(months).not.toContain(11); // never December
   });
 
   it("keeps seconds when the export has them", () => {

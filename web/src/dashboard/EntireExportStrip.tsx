@@ -1,5 +1,6 @@
 import { dateSpan, messageCount, uniqueSenders } from "../metrics/volume";
 import type { ParsedMessage } from "../types/chat";
+import type { DateOrder } from "../parse/parseExport";
 import { Badge, Card, InfoTip } from "../theme/UiKit";
 
 const EXPORT_CAP = 40000;
@@ -7,9 +8,11 @@ const EXPORT_CAP = 40000;
 export function EntireExportStrip({
   messages,
   warnings,
+  dateOrder,
 }: {
   messages: ParsedMessage[];
   warnings: string[];
+  dateOrder: DateOrder;
 }) {
   const names = uniqueSenders(messages);
   const span = dateSpan(messages);
@@ -28,8 +31,16 @@ export function EntireExportStrip({
       </div>
       <dl className="strip-grid">
         <div className="strip-item">
-          <dt>Date range</dt>
-          <dd>{range}</dd>
+          <dt>
+            Date range
+            <InfoTip metric="dateReading" />
+          </dt>
+          <dd>
+            {range}{" "}
+            <span className="muted">
+              ({dateOrder === "dayFirst" ? "day/month" : "month/day"})
+            </span>
+          </dd>
         </div>
         <div className="strip-item">
           <dt>People</dt>

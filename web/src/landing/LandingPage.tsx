@@ -1,6 +1,5 @@
 import { useState, type DragEvent } from "react";
-import type { ParsedMessage } from "../types/chat";
-import { parseExport } from "../parse/parseExport";
+import { parseExport, type ParseResult } from "../parse/parseExport";
 import { Page } from "../theme/UiKit";
 import { readChatFile } from "./readChatFile";
 import "./LandingPage.css";
@@ -27,11 +26,7 @@ const STEPS = [
   "Save the .txt and drop it below.",
 ];
 
-export function LandingPage({
-  onParsed,
-}: {
-  onParsed: (messages: ParsedMessage[], warnings: string[]) => void;
-}) {
+export function LandingPage({ onParsed }: { onParsed: (result: ParseResult) => void }) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -46,13 +41,13 @@ export function LandingPage({
       setError(read.error);
       return;
     }
-    const { messages, warnings } = parseExport(read.text);
+    const result = parseExport(read.text);
     setStatus(null);
-    if (messages.length === 0) {
-      setError(warnings[0] ?? "No WhatsApp messages found.");
+    if (result.messages.length === 0) {
+      setError(result.warnings[0] ?? "No WhatsApp messages found.");
       return;
     }
-    onParsed(messages, warnings);
+    onParsed(result);
   };
 
   const onDrop = (event: DragEvent<HTMLDivElement>) => {

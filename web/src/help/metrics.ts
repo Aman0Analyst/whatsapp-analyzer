@@ -32,16 +32,16 @@ export const METRIC_HELP: Record<string, MetricHelp> = {
     caveat: "WhatsApp exports identify people by phone number or saved contact name. If someone changed number they can appear twice.",
   },
   medianReply: {
-    title: "Median reply time",
-    what: "The typical wait before someone answers — half of all replies were faster than this.",
+    title: "Typical reply time",
+    what: "The usual wait before someone answers — half of all replies were faster than this, half slower. Statistics tools call this the median.",
     how: `Each reply is the gap from the previous speaker's last message to the next speaker's first message. Gaps longer than the reply window are treated as a new conversation, not a slow reply.`,
     caveat: `Needs at least ${MIN_DURATION_SAMPLE} replies before a number is shown. This is send time, not read receipts — nobody's "seen" status is in the export.`,
   },
   p90Reply: {
-    title: "P90 reply time",
-    what: "The slow tail: 9 out of 10 replies were faster than this.",
-    how: "The 90th percentile of reply gaps, interpolated between the two nearest samples.",
-    caveat: "A single long gap moves this far more than it moves the median.",
+    title: "Slow replies",
+    what: "The slow end of the range: 9 out of 10 replies came back faster than this.",
+    how: "The 90th percentile of reply gaps, interpolated between the two nearest samples. Statistics tools call this P90.",
+    caveat: "One very long gap moves this far more than it moves the typical time.",
   },
   replyCount: {
     title: "Reply samples (n)",
@@ -103,10 +103,10 @@ export const METRIC_HELP: Record<string, MetricHelp> = {
     caveat: "Coarser grains smooth out spikes; finer grains on a multi-year export get noisy.",
   },
   durationStat: {
-    title: "Duration statistic",
-    what: "Which summary the response-time trend line plots.",
-    how: `Median is the midpoint, P90 is the slow tail, mean is the arithmetic average. Buckets with fewer than ${MIN_DURATION_SAMPLE} replies are left blank rather than guessed.`,
-    caveat: "Mean is the most sensitive to a single very long gap.",
+    title: "Which reply time to plot",
+    what: "Chooses what the response-time trend line shows.",
+    how: `"Typical" is the midpoint (median), "Slow replies" is the slow end that 9 in 10 beat (P90), and "Average" is the arithmetic mean. Periods with fewer than ${MIN_DURATION_SAMPLE} replies are left blank rather than guessed.`,
+    caveat: "Average is the most sensitive to a single very long gap.",
   },
   hourFilter: {
     title: "Hour range",
@@ -122,6 +122,12 @@ export const METRIC_HELP: Record<string, MetricHelp> = {
     title: "Date range",
     what: "Limits the analysis to a recent slice of the export.",
     how: "Presets count back from the last message in the file, not from today.",
+  },
+  dateReading: {
+    title: "How dates were read",
+    what: "Whether this file writes dates as day/month or month/day.",
+    how: "WhatsApp uses the exporting phone's locale, so 02/03/26 is either 2 March or February 3. Any date with a number above 12 in one slot proves that slot is the day, and that reading is then applied to the whole file.",
+    caveat: "If this says the wrong thing, the timeline will be wrong — check that the last date matches the real end of your chat.",
   },
   exportSpan: {
     title: "Entire export",

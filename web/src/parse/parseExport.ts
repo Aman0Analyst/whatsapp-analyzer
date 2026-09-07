@@ -1,6 +1,7 @@
 import type { LineType, ParsedMessage } from "../types/chat";
 import {
   BAD_CHARS,
+  DATE_PREFIX,
   IS_ATTACHMENT,
   IS_CHAT,
   IS_DELETED_CHAT,
@@ -10,9 +11,13 @@ import {
   NBSP,
 } from "./patterns";
 
+/** Which slot of `02/03/26` holds the day. */
+export type DateOrder = "dayFirst" | "monthFirst";
+
 export interface ParseResult {
   messages: ParsedMessage[];
   warnings: string[];
+  dateOrder: DateOrder;
 }
 
 /** Lines of one message: the dated first line plus any continuation lines. */
@@ -60,7 +65,32 @@ function isRealDate(year: number, month: number, day: number): boolean {
   return date.getMonth() === month - 1 && date.getDate() === day;
 }
 
-function buildTimestamp(groups: Record<string, string | undefined>): Date | null {
+/**
+ * WhatsApp writes dates in the exporting phone's locale, so `02/03/26` is 2
+ * March in most of the world and February 3 in the US. Guessing per line lets
+ * one file mix both and scrambles the timeline, so decide once for the whole
+ * file: any slot holding a number above 12 must be the day. Whichever reading
+ * the file proves more often wins, and an entirely ambiguous file falls to
+ * day-first, matching the locale most exports come from.
+ */
+export function detectDateOrder(lines: string[]): DateOrder {
+  let dayFirst = 0;
+  let monthFirst = 0;
+  for (const line of lines) {
+    const match = DATE_PREFIX.exec(line);
+    if (!match) continue;
+    const first = Number(match[1]);
+    const second = Number(match[2]);
+    if (first > 12 && second <= 12) dayFirst += 1;
+    else if (second > 12 && first <= 12) monthFirst += 1;
+  }
+  return monthFirst > dayFirst ? "monthFirst" : "dayFirst";
+}
+
+function buildTimestamp(
+  groups: Record<string, string | undefined>,
+  order: DateOrder,
+): Date | null {
   const num1 = Number(groups.num1);
   const num2 = Number(groups.num2);
   const year = expandYear(Number(groups.year));
@@ -75,11 +105,19 @@ function buildTimestamp(groups: Record<string, string | undefined>): Date | null
   }
   if (hour > 23 || minute > 59 || second > 59) return null;
 
-  // `dateutil` reads an ambiguous date month first and only swaps when that is impossible.
-  for (const [month, day] of [
-    [num1, num2],
-    [num2, num1],
-  ]) {
+  // Try the file's own convention first, then the other way for a stray line
+  // that cannot be read that way at all.
+  const readings: number[][] =
+    order === "dayFirst"
+      ? [
+          [num2, num1],
+          [num1, num2],
+        ]
+      : [
+          [num1, num2],
+          [num2, num1],
+        ];
+  for (const [month, day] of readings) {
     if (isRealDate(year, month, day)) {
       return new Date(year, month - 1, day, hour, minute, second);
     }
@@ -144,7 +182,10 @@ export function parseExport(text: string): ParseResult {
   let unreadableDates = 0;
   let unknownSystemLines = 0;
 
-  for (const rawLine of text.split(/\r?\n/)) {
+  const lines = text.split(/\r?\n/);
+  const dateOrder = detectDateOrder(lines);
+
+  for (const rawLine of lines) {
     const line = cleanLine(rawLine);
     const groups = IS_STARTING_LINE.exec(line)?.groups;
 
@@ -155,7 +196,7 @@ export function parseExport(text: string): ParseResult {
       continue;
     }
 
-    const timestamp = buildTimestamp(groups);
+    const timestamp = buildTimestamp(groups, dateOrder);
     if (!timestamp) {
       unreadableDates += 1;
       continue;
@@ -188,5 +229,5 @@ export function parseExport(text: string): ParseResult {
     warnings.push(`Treated ${count(unknownSystemLines, "unrecognised system line")} as events.`);
   }
 
-  return { messages, warnings };
+  return { messages, warnings, dateOrder };
 }
