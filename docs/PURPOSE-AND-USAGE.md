@@ -89,7 +89,7 @@ The filter bar sits at the top of the dashboard and is **shared**: sender rank, 
 | **People** | All, or multi-select senders | All (1:1: both names visible as a compare) | Keep only those senders’ messages. Rankings and word/emoji lists recompute on the subset. |
 | **Date range** | Full span, presets (30d / 90d / 1y), or chart brush | Full export | Drop messages (and replies) outside the range. Headline cards are for this range only. |
 | **Time grain** | Day / week / month / quarter | Week if span ≤ 6 months, else month | Bucket for **trend** charts (volume, reply time, words/day, media/day). |
-| **Statistic** | Sum / mean / median / P90 (where it makes sense) | Sum for counts; **median** for durations | Volume trends use sum (messages). Reply time uses median by default; user can switch to P90 or mean. |
+| **Statistic** | Sum, or Typical / Slow replies / Average for durations | Sum for counts; **Typical** for durations | Volume trends use sum (messages). Reply time uses Typical (median) by default; the user can switch to Slow replies (P90) or Average (mean). The UI shows the plain-language name and keeps the statistical term in the help tip. |
 | **Compare** | Overlay selected people as separate series | On when 2–5 people selected | One color per person. “All” is a single combined series. |
 | **Hour filter** | All hours, or e.g. 08:00–22:00 | All hours | Optional; applies to every metric so a “daytime only” view is consistent. |
 
@@ -106,7 +106,7 @@ The filter bar sits at the top of the dashboard and is **shared**: sender rank, 
 | Top words / emojis | Yes | Yes | Optional: top in each month as a small multiples or “this period only” | Count |
 | Media / links / deleted rates | Yes | Yes | Yes | Sum or rate (count / messages) |
 | Session starts / who starts | Yes | Yes | Yes | Count of sessions started |
-| Response time | Yes | Yes | Yes | Median (default), P90, mean |
+| Response time | Yes | Yes | Yes | Typical / median (default), Slow replies / P90, Average / mean |
 | Unique senders in range | — (this *is* the people dimension) | Yes | Yes (how many distinct senders per bucket) | Count distinct |
 
 If a control does not apply, disable it on that card rather than inventing a fake number.
@@ -125,7 +125,7 @@ For **each** of the metrics above, the same pattern:
 
 ### Small samples
 
-Do not plot a median or P90 on fewer than **5** observations in a bucket. Counts (messages, media) may show 0. Grey out people with too little data in the selected range (“not enough in this filter”).
+Do not plot a Typical (median) or Slow replies (P90) value on fewer than **5** observations in a bucket. Counts (messages, media) may show 0. Grey out people with too little data in the selected range (“not enough in this filter”).
 
 ### What stays global (not filtered into a lie)
 
@@ -159,14 +159,14 @@ Deleted messages and system events are not turns.
 
 | Stat | Why |
 |---|---|
-| **Median reply time** | Typical speed; outliers (one 90-minute delay) do not dominate |
-| **P90 reply time** | “Usually fast, sometimes slow” |
+| **Typical reply time** (median) | Usual speed; outliers (one 90-minute delay) do not dominate |
+| **Slow replies** (P90) | “Usually fast, sometimes slow” — the slow end 9 in 10 replies beat |
 | **Reply count** | How many times we actually measured (do not rank someone on 3 samples) |
 | **vs previous period** | Median this month vs last month (or this quarter vs last) |
 
-Show **median**, not mean, as the default card. Mean is optional in the aggregator because one long gap inside the window pulls it up.
+Show **Typical** (median), not Average (mean), as the default card. Average is optional in the aggregator because one long gap inside the window pulls it up.
 
-**Example (1:1):** Maya’s median is 2 min (n = 410); Rohan’s is 4 h 10 min (n = 380). Same message counts, very different rhythm.
+**Example (1:1):** Maya’s typical reply is 2 min (n = 410); Rohan’s is 4 h 10 min (n = 380). Same message counts, very different rhythm.
 
 **Example (group):** In a 7-person trip chat, the planner’s median is 3 min; three others sit around 40–90 min. The planner is the backbone even if they are not #1 by volume.
 

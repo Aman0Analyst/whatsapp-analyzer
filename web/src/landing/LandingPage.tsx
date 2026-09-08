@@ -15,7 +15,7 @@ const FEATURES = [
   },
   {
     title: "How fast",
-    body: "Median and P90 reply times per person, with a window that separates replies from new chats.",
+    body: "Typical and slow reply times per person, with a window that separates replies from new conversations.",
   },
 ];
 
