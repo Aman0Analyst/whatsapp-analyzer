@@ -143,20 +143,17 @@ describe("ContentSection", () => {
     await user.type(search, "jaan");
     const stretch = container.querySelector(".stretch-block") as HTMLElement;
     expect(stretch).toHaveTextContent("2 matches for stretched “jaan”");
-    expect(stretch.querySelectorAll(".mini-rank-label").length).toBe(2);
-    expect(stretch).toHaveTextContent("jaaaan");
-    expect(stretch).toHaveTextContent("jaaaannnnn");
-    expect([...stretch.querySelectorAll(".mini-rank-label")].map((node) => node.textContent)).not.toContain(
-      "jaan",
-    );
+    expect(stretch).toHaveTextContent("Ada");
+    expect(stretch).not.toHaveTextContent("Bob");
+    expect(stretch).not.toHaveTextContent("jaaaan");
+    expect(stretch).not.toHaveTextContent("jaaaannnnn");
 
     await user.clear(search);
     await user.type(search, "good");
     expect(stretch).toHaveTextContent("2 matches for stretched “good”");
-    expect(stretch).toHaveTextContent("goooodddd");
-    expect(stretch).toHaveTextContent("gggooood");
-    expect([...stretch.querySelectorAll(".mini-rank-label")].map((node) => node.textContent)).not.toContain(
-      "good",
-    );
+    expect(stretch).toHaveTextContent("Bob");
+    expect(stretch).not.toHaveTextContent("Ada");
+    expect(stretch).not.toHaveTextContent("goooodddd");
+    expect(stretch).not.toHaveTextContent("gggooood");
   });
 });

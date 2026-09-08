@@ -71,7 +71,7 @@ class TestMetricsWaveCli(TestCase):
         self.assertNotIn(emoji_heavy, stripped)
         self.assertIn(emoji_heavy, kept)
 
-    def test_stretch_flag_groups_drawn_out_spellings(self):
+    def test_stretch_flag_counts_per_sender(self):
         lines = [
             "[1/1/2026, 10:00:00 am] Alice: Jaaaan Jaaaannnnn jaan",
             "[1/1/2026, 10:01:00 am] Bob: goooodddd gggooood good god",
@@ -79,13 +79,17 @@ class TestMetricsWaveCli(TestCase):
         jaan = self.run_analyzer(lines, "--stretch", "jaan")
         good = self.run_analyzer(lines, "--stretch", "good")
 
-        self.assertIn("Stretched Words", jaan)
-        self.assertIn('Matches for "jaan"\t: 2', jaan)
-        self.assertIn("jaaaan", jaan)
-        self.assertIn("jaaaannnnn", jaan)
-        self.assertNotIn("Matches for \"jaan\"\t: 3", jaan)
+        jaan_block = jaan[jaan.index("Stretched Words"):jaan.index("Reply Times")]
+        self.assertIn('Matches for "jaan"\t: 2', jaan_block)
+        self.assertIn("Alice", jaan_block)
+        self.assertNotIn("jaaaan", jaan_block)
+        self.assertNotIn("jaaaannnnn", jaan_block)
+        self.assertNotIn("Bob", jaan_block)
 
-        self.assertIn('Matches for "good"\t: 2', good)
-        self.assertIn("goooodddd", good)
-        self.assertIn("gggooood", good)
+        good_block = good[good.index("Stretched Words"):good.index("Reply Times")]
+        self.assertIn('Matches for "good"\t: 2', good_block)
+        self.assertIn("Bob", good_block)
+        self.assertNotIn("Alice", good_block)
+        self.assertNotIn("goooodddd", good_block)
+        self.assertNotIn("gggooood", good_block)
 

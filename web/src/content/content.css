@@ -141,10 +141,6 @@
   overflow-wrap: anywhere;
 }
 
-.stretch-block .mini-rank-row {
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-
 .stretch-block input.select {
   cursor: text;
   min-width: 12rem;

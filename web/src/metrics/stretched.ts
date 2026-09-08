@@ -36,8 +36,8 @@ function hasStretchedRun(raw: string): boolean {
   return false;
 }
 
-export interface StretchedVariant {
-  word: string;
+export interface StretchedBySender {
+  sender: string;
   n: number;
 }
 
@@ -45,34 +45,37 @@ export interface StretchedSearch {
   query: string;
   collapsed: string;
   total: number;
-  variants: StretchedVariant[];
+  bySender: StretchedBySender[];
 }
 
 /**
  * Tokens on chat lines whose collapsed letter-runs match the query, and that
- * actually stretch a letter (3+ in a row). The query is never compiled as regex.
+ * actually stretch a letter (3+ in a row). Counts are per sender, not per
+ * spelling. The query is never compiled as regex.
  */
 export function findStretchedWords(messages: ParsedMessage[], query: string): StretchedSearch {
   const trimmed = query.trim().slice(0, MAX_QUERY);
   const collapsed = collapseLetterRuns(trimmed);
   if (collapsed.length === 0) {
-    return { query: trimmed, collapsed: "", total: 0, variants: [] };
+    return { query: trimmed, collapsed: "", total: 0, bySender: [] };
   }
 
   const counts = new Map<string, number>();
   for (const message of messages) {
-    if (message.lineType !== "chat") continue;
+    if (message.lineType !== "chat" || !message.sender) continue;
+    let hits = 0;
     for (const raw of message.words) {
       if (collapseLetterRuns(raw) !== collapsed) continue;
       if (!hasStretchedRun(raw)) continue;
-      const word = raw.toLowerCase();
-      counts.set(word, (counts.get(word) ?? 0) + 1);
+      hits += 1;
     }
+    if (hits === 0) continue;
+    counts.set(message.sender, (counts.get(message.sender) ?? 0) + hits);
   }
 
-  const variants = [...counts.entries()]
-    .map(([word, n]) => ({ word, n }))
-    .sort((a, b) => b.n - a.n || a.word.localeCompare(b.word));
-  const total = variants.reduce((sum, row) => sum + row.n, 0);
-  return { query: trimmed, collapsed, total, variants };
+  const bySender = [...counts.entries()]
+    .map(([sender, n]) => ({ sender, n }))
+    .sort((a, b) => b.n - a.n || a.sender.localeCompare(b.sender));
+  const total = bySender.reduce((sum, row) => sum + row.n, 0);
+  return { query: trimmed, collapsed, total, bySender };
 }

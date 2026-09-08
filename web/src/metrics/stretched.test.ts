@@ -19,7 +19,7 @@ describe("collapseLetterRuns", () => {
 });
 
 describe("findStretchedWords", () => {
-  it("groups stretched spellings of the query and ignores exact unstretched words", () => {
+  it("counts stretched hits per sender and ignores exact unstretched words", () => {
     const rows = findStretchedWords(
       [
         msg("Ada", "10:00", "Jaaaan"),
@@ -31,8 +31,7 @@ describe("findStretchedWords", () => {
     );
     expect(rows.collapsed).toBe("jan");
     expect(rows.total).toBe(2);
-    expect(rows.variants.map((row) => row.word)).toEqual(["jaaaan", "jaaaannnnn"]);
-    expect(rows.variants.map((row) => row.n)).toEqual([1, 1]);
+    expect(rows.bySender).toEqual([{ sender: "Ada", n: 2 }]);
   });
 
   it("treats extra leading letters as the same stretch family", () => {
@@ -47,13 +46,16 @@ describe("findStretchedWords", () => {
     );
     expect(rows.collapsed).toBe("god");
     expect(rows.total).toBe(2);
-    expect(rows.variants.map((row) => row.word).sort()).toEqual(["gggooood", "goooodddd"]);
+    expect(rows.bySender).toEqual([
+      { sender: "Ada", n: 1 },
+      { sender: "Bob", n: 1 },
+    ]);
   });
 
   it("returns nothing for a blank query or a query with no letters", () => {
     const messages = [msg("Ada", "10:00", "Jaaaan")];
-    expect(findStretchedWords(messages, "   ").variants).toEqual([]);
-    expect(findStretchedWords(messages, "!!!").variants).toEqual([]);
+    expect(findStretchedWords(messages, "   ").bySender).toEqual([]);
+    expect(findStretchedWords(messages, "!!!").bySender).toEqual([]);
   });
 
   it("counts chat tokens only", () => {

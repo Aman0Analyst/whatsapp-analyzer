@@ -54,16 +54,16 @@ def find_stretched_words(messages, query):
         return collapsed, []
     counts = Counter()
     for row in messages:
-        if row.line_type != "Chat" or row.is_deleted_chat:
+        if row.line_type != "Chat" or row.is_deleted_chat or not row.sender:
             continue
         for raw in row.words:
             if collapse_letter_runs(raw) != collapsed:
                 continue
             if not has_stretched_run(raw):
                 continue
-            counts[raw.lower()] += 1
-    variants = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
-    return collapsed, variants
+            counts[row.sender] += 1
+    by_sender = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    return collapsed, by_sender
 
 
 """
@@ -444,15 +444,15 @@ def print_metrics_wave(messages, strip_emojis=True, stretch_query=None):
 
     if stretch_query:
         metric_header("Stretched Words")
-        collapsed, variants = find_stretched_words(messages, stretch_query)
+        collapsed, by_sender = find_stretched_words(messages, stretch_query)
         if not collapsed:
             print("Query has no letters to match")
-        elif not variants:
+        elif not by_sender:
             print("No stretched spellings of \"{}\"".format(stretch_query.strip()))
         else:
-            total = sum(count for _, count in variants)
+            total = sum(count for _, count in by_sender)
             print("Matches for \"{}\"\t: {}".format(stretch_query.strip(), total))
-            printBarChart(variants[:20], fill=Color.blue("█"))
+            printBarChart(by_sender, fill=Color.blue("█"))
 
     metric_header("Reply Times (2-hour window)")
     turns = []

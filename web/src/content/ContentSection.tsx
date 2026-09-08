@@ -174,16 +174,7 @@ export function ContentSection({ messages }: { messages: ParsedMessage[] }) {
               {stretched.total.toLocaleString()}{" "}
               {stretched.total === 1 ? "match" : "matches"} for stretched “{stretchQuery.trim()}”
             </p>
-            <ol className="mini-rank">
-              {stretched.variants.map((row) => (
-                <li className="mini-rank-row" key={row.word}>
-                  <span className="mini-rank-label" title={row.word}>
-                    {row.word}
-                  </span>
-                  <span className="mini-rank-value">{row.n.toLocaleString()}</span>
-                </li>
-              ))}
-            </ol>
+            <RankBars rows={stretched.bySender.map((row) => ({ label: row.sender, n: row.n }))} />
           </>
         )}
       </div>
