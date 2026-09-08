@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { parseExport } from "./parseExport";
@@ -256,15 +256,18 @@ describe("fixtures", () => {
     );
   });
 
-  it("parses the real export fixture", () => {
-    const { messages } = parseExport(fixture("chat_example.txt"));
-    const senders = new Set(messages.map((m) => m.sender).filter(Boolean));
-    expect(senders.size).toBeGreaterThan(1);
-    expect(messages.filter((m) => m.lineType === "chat").length).toBeGreaterThan(100);
-    expect(messages.filter((m) => m.lineType === "attachment").length).toBeGreaterThan(0);
-    expect(messages.filter((m) => m.lineType === "deleted")).toHaveLength(1);
-    expect(messages.filter((m) => m.lineType === "event").length).toBeGreaterThan(0);
-    expect(messages.some((m) => m.domains.includes("github.com"))).toBe(true);
-    expect(messages.every((m) => !Number.isNaN(m.timestamp.getTime()))).toBe(true);
-  });
+  it.skipIf(!existsSync(fileURLToPath(new URL("./fixtures/chat_example.txt", import.meta.url))))(
+    "parses a local chat_example.txt when present",
+    () => {
+      const { messages } = parseExport(fixture("chat_example.txt"));
+      const senders = new Set(messages.map((m) => m.sender).filter(Boolean));
+      expect(senders.size).toBeGreaterThan(1);
+      expect(messages.filter((m) => m.lineType === "chat").length).toBeGreaterThan(100);
+      expect(messages.filter((m) => m.lineType === "attachment").length).toBeGreaterThan(0);
+      expect(messages.filter((m) => m.lineType === "deleted")).toHaveLength(1);
+      expect(messages.filter((m) => m.lineType === "event").length).toBeGreaterThan(0);
+      expect(messages.some((m) => m.domains.includes("github.com"))).toBe(true);
+      expect(messages.every((m) => !Number.isNaN(m.timestamp.getTime()))).toBe(true);
+    },
+  );
 });

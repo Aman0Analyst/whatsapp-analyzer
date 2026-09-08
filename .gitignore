@@ -25,3 +25,8 @@ web/blob-report
 
 # Agent scratch (progress lives in docs/superpowers/plans/)
 .superpowers/
+
+# Local chat exports — keep on disk for manual tests, never commit
+/chat_example.txt
+web/public/samples/*.txt
+web/src/parse/fixtures/chat_example.txt
