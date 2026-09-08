@@ -19,6 +19,9 @@ test("group upload shows sender rank", async ({ page }) => {
   await page.getByLabel(/choose a \.txt export/i).setInputFiles(file);
   await expect(page.getByText(/group chat/i)).toBeVisible();
   await expect(page.getByRole("heading", { name: /sender rank/i })).toBeVisible();
+  await expect(
+    page.getByRole("checkbox", { name: "Ignore emojis in long messages", exact: true }),
+  ).toBeChecked();
   await page.getByRole("button", { name: "30d" }).click();
   await expect(page.getByText("Entire export", { exact: true })).toBeVisible();
 });

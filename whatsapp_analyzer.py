@@ -50,6 +50,13 @@ parser.add_argument(
     help="Custom Stop Words. File path to stop word. File must a raw text. One word for every line"
 )
 
+parser.add_argument(
+    '--keep-emoji-in-length',
+    required=False,
+    help="Keep emojis when measuring long messages (ignored by default).",
+    action="store_true"
+)
+
 args = parser.parse_args()
 
 """
@@ -99,9 +106,11 @@ chat_counter = {
 
 
 previous_line = None
+parsed_lines = []
 for line in lines:
     chatline = Chatline(line=line, previous_line=previous_line, debug=args.debug)
     previous_line = chatline
+    parsed_lines.append(chatline)
 
     # Counter
     if chatline.line_type == 'Chat':
@@ -165,6 +174,238 @@ def reduce_fav_item(data):
             exist.append(i[0][0])
             arr.append(i)
     return arr
+
+def median(values):
+    values = sorted(values)
+    middle = len(values) // 2
+    if len(values) % 2:
+        return values[middle]
+    return (values[middle - 1] + values[middle]) / 2
+
+def quantile(values, q):
+    values = sorted(values)
+    if len(values) == 1:
+        return values[0]
+    index = (len(values) - 1) * q
+    lower = int(index)
+    upper = min(lower + 1, len(values) - 1)
+    return values[lower] + (index - lower) * (values[upper] - values[lower])
+
+def format_duration(seconds):
+    seconds = int(round(seconds))
+    days, remainder = divmod(seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    parts = []
+    if days:
+        parts.append("{}d".format(days))
+    if hours:
+        parts.append("{}h".format(hours))
+    if minutes or (not days and not hours):
+        parts.append("{}m".format(minutes))
+    parts.append("{}s".format(seconds))
+    return " ".join(parts)
+
+def metric_header(title):
+    print()
+    print("-" * 50)
+    print(title)
+    print("-" * 50)
+
+def build_sessions(messages, gap_minutes=45):
+    messages = sorted(messages, key=lambda row: row.timestamp)
+    sessions = []
+    for message in messages:
+        last = sessions[-1] if sessions else None
+        if last is None or (message.timestamp - last['end']).total_seconds() > gap_minutes * 60:
+            sessions.append({
+                'start': message.timestamp,
+                'end': message.timestamp,
+                'starter': message.sender,
+                'closer': message.sender,
+                'message_count': 1,
+                'participants': {message.sender},
+            })
+            continue
+        last['end'] = message.timestamp
+        last['closer'] = message.sender
+        last['message_count'] += 1
+        last['participants'].add(message.sender)
+    return sessions
+
+def print_metrics_wave(messages, strip_emojis=True):
+    chats = [
+        row for row in messages
+        if row.line_type == 'Chat' and not row.is_deleted_chat and row.sender and row.timestamp
+    ]
+    countable = [
+        row for row in messages
+        if row.line_type != 'Event' and row.sender and row.timestamp
+    ]
+
+    metric_header("Conversation Balance")
+    words_by_sender = Counter()
+    chats_by_sender = Counter()
+    for row in chats:
+        words_by_sender[row.sender] += len(row.words)
+        chats_by_sender[row.sender] += 1
+    total_words = sum(words_by_sender.values())
+    for sender, word_count in sorted(words_by_sender.items(), key=lambda item: (-item[1], item[0])):
+        share = 100 * word_count / total_words if total_words else 0
+        mean_words = word_count / chats_by_sender[sender]
+        print("{} | {} words | {:.1f}% | mean {:.1f} words/message".format(
+            sender, word_count, share, mean_words
+        ))
+
+    dates = sorted({row.timestamp.date() for row in countable})
+    if dates:
+        span_days = (dates[-1] - dates[0]).days + 1
+        print("Active days\t: {}".format(len(dates)))
+        print("Silent days\t: {}".format(span_days - len(dates)))
+        timestamps = sorted(row.timestamp for row in countable)
+        if len(timestamps) > 1:
+            longest_silence = max(
+                (later - earlier).total_seconds()
+                for earlier, later in zip(timestamps, timestamps[1:])
+            )
+            print("Longest silence\t: {}".format(format_duration(longest_silence)))
+        else:
+            print("Longest silence\t: unavailable")
+    else:
+        print("Active days\t: 0")
+        print("Silent days\t: 0")
+        print("Longest silence\t: unavailable")
+
+    metric_header("Sessions (45-minute gap)")
+    sessions = build_sessions(countable)
+    print("Session count\t: {}".format(len(sessions)))
+    if len(sessions) >= 5:
+        print("Median duration\t: {}".format(format_duration(median([
+            (session['end'] - session['start']).total_seconds() for session in sessions
+        ]))))
+        print("Median messages/session\t: {:.1f}".format(median([
+            session['message_count'] for session in sessions
+        ])))
+        print("Median people/burst\t: {:.1f}".format(median([
+            len(session['participants']) for session in sessions
+        ])))
+    else:
+        print("Session medians\t: unavailable (need at least 5 sessions)")
+    starters = Counter(session['starter'] for session in sessions)
+    closers = Counter(session['closer'] for session in sessions)
+    for sender, count in sorted(starters.items(), key=lambda item: (-item[1], item[0])):
+        print("{} | {} starts | {:.1f}%".format(sender, count, 100 * count / len(sessions)))
+    for sender, count in sorted(closers.items(), key=lambda item: (-item[1], item[0])):
+        print("{} | {} closes | {:.1f}%".format(sender, count, 100 * count / len(sessions)))
+
+    metric_header("Top Emojis by Sender")
+    emoji_by_sender = {}
+    for row in chats:
+        if row.emojis:
+            emoji_by_sender.setdefault(row.sender, Counter()).update(row.emojis)
+    for sender, counts in sorted(
+        emoji_by_sender.items(),
+        key=lambda item: (-sum(item[1].values()), item[0])
+    ):
+        top = sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:8]
+        print("{} | {}".format(
+            sender,
+            " | ".join("{} {}".format(glyph, count) for glyph, count in top)
+        ))
+
+    metric_header("Long Messages (P99 and Tukey IQR)")
+    measured = []
+    for row in chats:
+        body = emoji.replace_emoji(row.body, replace='') if strip_emojis else row.body
+        if len(body) > 0:
+            measured.append((row, len(body)))
+    if len(measured) < 8:
+        print("Unavailable (need at least 8 chat lines)")
+    else:
+        lengths = [length for _, length in measured]
+        p99 = quantile(lengths, 0.99)
+        q1 = quantile(lengths, 0.25)
+        q3 = quantile(lengths, 0.75)
+        iqr_limit = q3 + 1.5 * (q3 - q1)
+        outliers = []
+        for row, length in measured:
+            reasons = []
+            if length >= p99:
+                reasons.append("P99")
+            if length > iqr_limit:
+                reasons.append("IQR")
+            if reasons:
+                outliers.append((row, length, reasons))
+        for row, length, reasons in sorted(outliers, key=lambda item: -item[1]):
+            body = row.body.replace("\n", " ")
+            if len(body) > 120:
+                body = body[:117] + "..."
+            print("{} | {} | {} chars | {} | {}".format(
+                row.sender,
+                row.timestamp.strftime("%Y-%m-%d %H:%M"),
+                length,
+                "+".join(reasons),
+                body
+            ))
+        if not outliers:
+            print("No long messages")
+
+    metric_header("Group Health")
+    all_senders = {row.sender for row in countable}
+    chat_senders = set(chats_by_sender)
+    silent_senders = sorted(all_senders - chat_senders)
+    print("Senders with 0 chat lines\t: {}".format(
+        ", ".join(silent_senders) if silent_senders else "none"
+    ))
+    countable_by_sender = Counter(row.sender for row in countable)
+    total_countable = sum(countable_by_sender.values())
+    concentration = sum(
+        (count / total_countable) ** 2 for count in countable_by_sender.values()
+    ) if total_countable else 0
+    print("Herfindahl concentration\t: {:.3f}".format(concentration))
+    night_count = sum(row.timestamp.hour >= 22 or row.timestamp.hour <= 5 for row in countable)
+    weekend_count = sum(row.timestamp.weekday() >= 5 for row in countable)
+    print("Night share\t: {:.1f}%".format(
+        100 * night_count / len(countable) if countable else 0
+    ))
+    print("Weekend share\t: {:.1f}%".format(
+        100 * weekend_count / len(countable) if countable else 0
+    ))
+    questions = Counter(row.sender for row in chats if '?' in row.body)
+    question_rows = sorted(
+        chats_by_sender.items(),
+        key=lambda item: (-questions[item[0]] / item[1], item[0])
+    )
+    for sender, count in question_rows:
+        print("{} | {}/{} questions | {:.1f}%".format(
+            sender, questions[sender], count, 100 * questions[sender] / count
+        ))
+
+    metric_header("Reply Times (2-hour window)")
+    turns = []
+    for row in sorted(chats, key=lambda item: item.timestamp):
+        if turns and turns[-1]['sender'] == row.sender:
+            turns[-1]['end'] = row.timestamp
+        else:
+            turns.append({'sender': row.sender, 'start': row.timestamp, 'end': row.timestamp})
+    replies = {}
+    for previous, current in zip(turns, turns[1:]):
+        delay = (current['start'] - previous['end']).total_seconds()
+        if delay <= 2 * 60 * 60:
+            replies.setdefault(current['sender'], []).append(delay)
+    eligible_replies = False
+    for sender, delays in sorted(replies.items(), key=lambda item: (-len(item[1]), item[0])):
+        if len(delays) < 5:
+            continue
+        eligible_replies = True
+        print("{} | n={} | median {} | P90 {}".format(
+            sender,
+            len(delays),
+            format_duration(median(delays)),
+            format_duration(quantile(delays, 0.9))
+        ))
+    if not eligible_replies:
+        print("Unavailable (need at least 5 replies per sender)")
     
 chat_counter['senders'] = reduce_and_sort(chat_counter['senders'])
 chat_counter['words'] = reduce_and_sort(reduce_and_filter_words(chat_counter['words']))
@@ -348,3 +589,5 @@ print('Less [{}{}{}{}{}] More'.format(
 ))
 print()
 printCalendar(dict(data))
+
+print_metrics_wave(parsed_lines, strip_emojis=not args.keep_emoji_in_length)

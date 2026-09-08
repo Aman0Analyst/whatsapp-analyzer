@@ -10,6 +10,11 @@ function GrainProbe() {
   return <div data-testid="grain">{filter.grain}</div>;
 }
 
+function StripProbe() {
+  const { filter } = useFilter();
+  return <div data-testid="strip">{String(filter.stripEmojisForLength)}</div>;
+}
+
 const messages = [msg("Ada", "2024-01-01 10:00"), msg("Bob", "2024-01-02 11:00")];
 
 describe("FilterBar", () => {
@@ -33,5 +38,33 @@ describe("FilterBar", () => {
       </FilterProvider>,
     );
     expect(screen.getByRole("combobox", { name: /response time only/i })).toBeInTheDocument();
+  });
+
+  it("offers the emoji-strip toggle on by default and turns it off", async () => {
+    const user = userEvent.setup();
+    render(
+      <FilterProvider messages={messages}>
+        <FilterBar />
+        <StripProbe />
+      </FilterProvider>,
+    );
+    const box = screen.getByRole("checkbox", { name: /ignore emojis in long messages/i });
+    expect(box).toBeChecked();
+    expect(screen.getByTestId("strip")).toHaveTextContent("true");
+    await user.click(box);
+    expect(screen.getByTestId("strip")).toHaveTextContent("false");
+  });
+
+  it("explains the emoji-strip toggle in plain language", async () => {
+    const user = userEvent.setup();
+    render(
+      <FilterProvider messages={messages}>
+        <FilterBar />
+      </FilterProvider>,
+    );
+    await user.click(
+      screen.getByRole("button", { name: /what is ignore emojis in long messages\?/i }),
+    );
+    expect(screen.getByRole("note")).toHaveTextContent(/only affects the long-message list/i);
   });
 });

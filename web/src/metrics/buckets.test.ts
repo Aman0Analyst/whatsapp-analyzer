@@ -5,6 +5,7 @@ import {
   mean,
   median,
   p90,
+  p99,
   reduceDuration,
 } from "./buckets";
 import { at } from "./fixtures";
@@ -45,6 +46,10 @@ describe("stat reducers", () => {
 
   it("interpolates p90", () => {
     expect(p90([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBeCloseTo(9.1, 10);
+  });
+
+  it("interpolates p99 at the high end of a ten-point sample", () => {
+    expect(p99([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBeCloseTo(9.91, 10);
   });
 
   it("computes the mean", () => {

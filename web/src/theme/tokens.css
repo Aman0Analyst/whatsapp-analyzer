@@ -65,11 +65,13 @@
   --text-lg: 1.25rem;
   --text-xl: 1.75rem;
   --text-2xl: 2.25rem;
-  --text-hero: 2.25rem;
   --text-stat: 2rem;
   --leading: 1.5;
   --leading-tight: 1.2;
   --tracking-caps: 0.06em;
+
+  /* Comfortable line length for anything meant to be read as prose. */
+  --measure: 62ch;
 
   --page-max: 1280px;
 }

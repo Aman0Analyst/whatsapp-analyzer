@@ -51,14 +51,31 @@ export function mean(values: number[]): number {
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
-export function p90(values: number[]): number {
+export function quantile(values: number[], q: number): number {
   const xs = sorted(values);
+  if (xs.length === 0) return Number.NaN;
   if (xs.length === 1) return xs[0];
-  const idx = (xs.length - 1) * 0.9;
+  const idx = (xs.length - 1) * q;
   const lo = Math.floor(idx);
   const hi = Math.ceil(idx);
   if (lo === hi) return xs[lo];
   return xs[lo] + (idx - lo) * (xs[hi] - xs[lo]);
+}
+
+export function p90(values: number[]): number {
+  return quantile(values, 0.9);
+}
+
+export function p99(values: number[]): number {
+  return quantile(values, 0.99);
+}
+
+export function quartile3(values: number[]): number {
+  return quantile(values, 0.75);
+}
+
+export function quartile1(values: number[]): number {
+  return quantile(values, 0.25);
 }
 
 export function reduceDuration(values: number[], stat: DurationStat): number | null {

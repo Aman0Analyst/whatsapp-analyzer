@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { defaultFilter } from "../types/chat";
 import { at, event, msg } from "./fixtures";
-import { buildReplies, buildTurns, filterReplies, replySummary, replyTrend } from "./replies";
+import {
+  buildReplies,
+  buildTurns,
+  filterReplies,
+  replySummary,
+  replyTrend,
+  replyVsPreviousPeriod,
+} from "./replies";
 
 const oneReply = (sender: string, when: string, delaySeconds: number) => ({
   at: at(when),
@@ -187,5 +194,75 @@ describe("replySummary", () => {
 
   it("returns nothing without events", () => {
     expect(replySummary([])).toEqual([]);
+  });
+});
+
+describe("replyVsPreviousPeriod", () => {
+  const onDay = (day: number, delaySeconds: number, sender = "Ada") =>
+    oneReply(sender, `2024-01-${String(day).padStart(2, "0")} 12:00`, delaySeconds);
+
+  // Jan 1–5 then Jan 6–10, so the midpoint of the reply times falls between them.
+  const twoHalves = [
+    ...[1, 2, 3, 4, 5].map((d) => onDay(d, 60)),
+    ...[6, 7, 8, 9, 10].map((d) => onDay(d, 120)),
+  ];
+
+  it("splits at the midpoint of the reply times when no range is set", () => {
+    expect(replyVsPreviousPeriod(twoHalves, defaultFilter())).toEqual({
+      current: 120,
+      previous: 60,
+      deltaSeconds: 60,
+    });
+  });
+
+  it("splits the filtered range rather than the reply times", () => {
+    // Midpoint is 2024-01-11, so every reply lands in the earlier half.
+    expect(
+      replyVsPreviousPeriod(twoHalves, {
+        ...defaultFilter(),
+        rangeStart: at("2024-01-01 00:00"),
+        rangeEnd: at("2024-01-21 00:00"),
+      }),
+    ).toEqual({ current: null, previous: 90, deltaSeconds: null });
+  });
+
+  it("leaves a side null when it holds fewer than five replies", () => {
+    const thinRecently = [
+      ...[1, 2, 3, 4, 5].map((d) => onDay(d, 60)),
+      ...[6, 7, 8].map((d) => onDay(d, 120)),
+    ];
+    expect(
+      replyVsPreviousPeriod(thinRecently, {
+        ...defaultFilter(),
+        rangeStart: at("2024-01-01 00:00"),
+        rangeEnd: at("2024-01-11 00:00"),
+      }),
+    ).toEqual({ current: null, previous: 60, deltaSeconds: null });
+  });
+
+  it("honours the duration statistic", () => {
+    const spread = [
+      ...[1, 2, 3, 4, 5].map((d) => onDay(d, d * 60)),
+      ...[6, 7, 8, 9, 10].map((d) => onDay(d, 600)),
+    ];
+    expect(replyVsPreviousPeriod(spread, { ...defaultFilter(), durationStat: "mean" })).toEqual({
+      current: 600,
+      previous: 180,
+      deltaSeconds: 420,
+    });
+  });
+
+  it("applies the shared filters before splitting", () => {
+    const withOutsider = [...twoHalves, onDay(20, 9999, "Bob")];
+    expect(replyVsPreviousPeriod(withOutsider, { ...defaultFilter(), senders: ["Ada"] })).toEqual({
+      current: 120,
+      previous: 60,
+      deltaSeconds: 60,
+    });
+  });
+
+  it("returns null when nothing survives the filters", () => {
+    expect(replyVsPreviousPeriod([], defaultFilter())).toBeNull();
+    expect(replyVsPreviousPeriod(twoHalves, { ...defaultFilter(), senders: ["Bob"] })).toBeNull();
   });
 });

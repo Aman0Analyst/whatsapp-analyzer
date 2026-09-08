@@ -1,11 +1,22 @@
 import { useMemo, useState } from "react";
 import { TrendChart } from "../charts/TrendChart";
-import { buildReplies, filterReplies, replySummary, replyTrend } from "../metrics/replies";
+import {
+  buildReplies,
+  filterReplies,
+  replySummary,
+  replyTrend,
+  replyVsPreviousPeriod,
+} from "../metrics/replies";
 import { useFilter } from "../state/FilterProvider";
 import { Badge, InfoTip, SectionCard } from "../theme/UiKit";
 import { senderColors } from "../theme/senderColor";
 import type { ParsedMessage } from "../types/chat";
-import { formatDuration, statLabel, windowLabel } from "./formatDuration";
+import {
+  formatDuration,
+  periodComparisonSentence,
+  statLabel,
+  windowLabel,
+} from "./formatDuration";
 import "../dashboard/dashboard.css";
 
 type SortKey = "sender" | "n" | "medianSeconds" | "p90Seconds";
@@ -38,6 +49,10 @@ export function ReplySection({
       if (sort === "sender") return a.sender.localeCompare(b.sender);
       return b[sort] - a[sort];
     });
+  const comparison = replyVsPreviousPeriod(events, filter);
+  const comparisonSentence = comparison
+    ? periodComparisonSentence(comparison, filter.durationStat)
+    : null;
   const trend = replyTrend(events, filter);
   const senders = [...new Set(trend.map((p) => p.sender))];
   const colors = senderColors(uniqueSenders);
@@ -95,6 +110,13 @@ export function ReplySection({
           })}
         </div>
       )}
+
+      {comparisonSentence ? (
+        <p className="muted">
+          {comparisonSentence}
+          <InfoTip metric="replyVsPrevious" />
+        </p>
+      ) : null}
 
       {series.length > 0 ? (
         <>

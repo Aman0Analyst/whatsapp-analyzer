@@ -196,6 +196,20 @@ export function FilterBar() {
             ))}
           </Select>
         </div>
+
+        <div className="field filter-toggle">
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={filter.stripEmojisForLength}
+              onChange={(e) =>
+                setFilter({ ...filter, stripEmojisForLength: e.target.checked })
+              }
+            />
+            <span className="check-name">Ignore emojis in long messages</span>
+          </label>
+          <InfoTip metric="stripEmojis" align="end" />
+        </div>
       </div>
     </section>
   );

@@ -6,8 +6,9 @@ function hourInRange(hour: number, start: number, end: number): boolean {
 }
 
 /**
- * Shared filter for every message-based metric. `replyWindowMinutes` and
- * `stopwordLang` are deliberately ignored here: they must never change counts.
+ * Shared filter for every message-based metric. `replyWindowMinutes`,
+ * `stopwordLang`, `durationStat`, `grain`, and `stripEmojisForLength` are
+ * ignored here: they must never change message counts.
  */
 export function filterMessages(messages: ParsedMessage[], filter: FilterState): ParsedMessage[] {
   return messages.filter((message) => {

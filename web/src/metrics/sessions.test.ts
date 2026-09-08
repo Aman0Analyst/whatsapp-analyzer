@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { at, event, msg } from "./fixtures";
-import { buildSessions, sessionGapMinutes, sessionStarts } from "./sessions";
+import { buildSessions, sessionClosers, sessionGapMinutes, sessionStarts, sessionStats } from "./sessions";
 
 describe("buildSessions", () => {
   it("ships a 45 minute gap", () => {
@@ -18,6 +18,7 @@ describe("buildSessions", () => {
       start: at("10:00"),
       end: at("10:20"),
       starter: "Ada",
+      closer: "Ada",
       messageCount: 3,
     });
     expect(sessions[0].participants).toEqual(["Ada", "Bob"]);
@@ -76,5 +77,71 @@ describe("sessionStarts", () => {
 
   it("returns nothing without messages", () => {
     expect(sessionStarts([])).toEqual([]);
+  });
+});
+
+describe("sessionStats", () => {
+  it("returns count with null medians below the sample threshold", () => {
+    const stats = sessionStats([
+      msg("Ada", "10:00"),
+      msg("Bob", "10:10"),
+      msg("Ada", "12:00"),
+    ]);
+    expect(stats).toEqual({
+      count: 2,
+      medianDurationSeconds: null,
+      medianMessageCount: null,
+      medianPeoplePerBurst: null,
+    });
+  });
+
+  it("returns zeros and nulls with no sessions", () => {
+    expect(sessionStats([])).toEqual({
+      count: 0,
+      medianDurationSeconds: null,
+      medianMessageCount: null,
+      medianPeoplePerBurst: null,
+    });
+  });
+
+  it("medians duration, message count, and people per burst from five sessions", () => {
+    const stats = sessionStats([
+      msg("Ada", "10:00"),
+      msg("Ada", "12:00"),
+      msg("Bob", "12:10"),
+      msg("Bob", "14:00"),
+      msg("Ada", "14:05"),
+      msg("Cal", "14:10"),
+      msg("Ada", "16:00"),
+      msg("Bob", "18:00"),
+      msg("Ada", "18:30"),
+    ]);
+    expect(stats).toEqual({
+      count: 5,
+      medianDurationSeconds: 600,
+      medianMessageCount: 2,
+      medianPeoplePerBurst: 2,
+    });
+  });
+});
+
+describe("sessionClosers", () => {
+  it("counts who sent the last message in each session", () => {
+    const rows = sessionClosers([
+      msg("Ada", "10:00"),
+      msg("Bob", "10:10"),
+      msg("Ada", "14:00"),
+      msg("Bob", "16:00"),
+      msg("Cal", "16:05"),
+    ]);
+    expect(rows).toEqual([
+      { sender: "Ada", n: 1, share: 1 / 3 },
+      { sender: "Bob", n: 1, share: 1 / 3 },
+      { sender: "Cal", n: 1, share: 1 / 3 },
+    ]);
+  });
+
+  it("returns nothing without messages", () => {
+    expect(sessionClosers([])).toEqual([]);
   });
 });

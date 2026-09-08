@@ -181,6 +181,49 @@ export function Kpi({ label, value, hint }: { label: string; value: string; hint
   );
 }
 
+/**
+ * A quiet list of things to read rather than compare — each row is a short
+ * label line plus a passage of prose. Generic on purpose: the caller decides
+ * what the title, meta and body mean.
+ */
+export function ReadingList({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return <ol className={`readlist ${className}`.trim()}>{children}</ol>;
+}
+
+export function ReadingRow({
+  title,
+  meta,
+  body,
+  aside,
+  colorVar,
+}: {
+  title: ReactNode;
+  body: ReactNode;
+  meta?: ReactNode;
+  aside?: ReactNode;
+  colorVar?: string;
+}) {
+  return (
+    <li className="readlist-row">
+      <div className="readlist-head">
+        {colorVar ? (
+          <span className="readlist-swatch" style={{ background: `var(${colorVar})` }} />
+        ) : null}
+        <span className="readlist-title">{title}</span>
+        {aside}
+        {meta ? <span className="readlist-meta">{meta}</span> : null}
+      </div>
+      <p className="readlist-body">{body}</p>
+    </li>
+  );
+}
+
 export function Meter({ share, colorVar }: { share: number; colorVar?: string }) {
   return (
     <div className="meter">

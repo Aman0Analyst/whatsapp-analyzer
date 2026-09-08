@@ -1,0 +1,142 @@
+/* web/src/content/content.css — blocks owned by the content section only */
+
+.content-block {
+  margin-top: var(--space-5);
+}
+
+.content-block .subhead {
+  margin: 0 0 var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* ---------- compact ranked list (top domains) ---------- */
+
+.mini-rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  max-width: 420px;
+}
+
+.mini-rank-row {
+  display: grid;
+  grid-template-columns: 1.2rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.mini-rank-row:last-child {
+  border-bottom: none;
+}
+
+.mini-rank-index {
+  font-size: var(--text-xs);
+  color: var(--ink-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-rank-label {
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-rank-value {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- emojis per person ---------- */
+
+.emoji-people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.emoji-person-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  margin-bottom: var(--space-1);
+}
+
+.emoji-run {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.emoji-run-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.emoji-run-glyph {
+  font-size: 1.2rem;
+  line-height: 1.1;
+}
+
+.emoji-run-count {
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- long / outlier messages ---------- */
+
+.longest {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.longest-row {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border-strong);
+}
+
+.longest-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  margin-bottom: 2px;
+}
+
+.longest-sender {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.longest-length {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.longest-body {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}

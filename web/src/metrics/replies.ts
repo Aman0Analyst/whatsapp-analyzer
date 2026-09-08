@@ -76,6 +76,43 @@ export function replyTrend(
     .sort((a, b) => a.t.getTime() - b.t.getTime() || a.sender.localeCompare(b.sender));
 }
 
+/**
+ * The same reply statistic for the later half of the visible stretch against
+ * the earlier half, so the section can say "faster than before" in a sentence
+ * rather than a second chart. The stretch is the filtered date range when one
+ * is set, otherwise the span of the reply times themselves.
+ */
+export function replyVsPreviousPeriod(
+  events: ReplyEvent[],
+  filter: FilterState,
+): { current: number | null; previous: number | null; deltaSeconds: number | null } | null {
+  const kept = filterReplies(events, filter);
+  if (kept.length === 0) return null;
+  let earliest = Number.POSITIVE_INFINITY;
+  let latest = Number.NEGATIVE_INFINITY;
+  for (const event of kept) {
+    const t = event.at.getTime();
+    if (t < earliest) earliest = t;
+    if (t > latest) latest = t;
+  }
+  const start = filter.rangeStart ? filter.rangeStart.getTime() : earliest;
+  const end = filter.rangeEnd ? filter.rangeEnd.getTime() : latest;
+  const midpoint = (start + end) / 2;
+  const previousValues: number[] = [];
+  const currentValues: number[] = [];
+  for (const event of kept) {
+    if (event.at.getTime() < midpoint) previousValues.push(event.delaySeconds);
+    else currentValues.push(event.delaySeconds);
+  }
+  const previous = reduceDuration(previousValues, filter.durationStat);
+  const current = reduceDuration(currentValues, filter.durationStat);
+  return {
+    current,
+    previous,
+    deltaSeconds: current !== null && previous !== null ? current - previous : null,
+  };
+}
+
 export function replySummary(
   events: ReplyEvent[],
 ): { sender: string; n: number; medianSeconds: number; p90Seconds: number; meanSeconds: number }[] {

@@ -9,18 +9,20 @@ import {
   messagesPerDay,
   uniqueSenders,
 } from "../metrics/volume";
-import { sessionStarts } from "../metrics/sessions";
+import { longestSilenceSeconds } from "../metrics/talk";
 import { ReplySection } from "../reply/ReplySection";
 import { formatDuration } from "../reply/formatDuration";
 import { FilterBar } from "../state/FilterBar";
 import { useFilter } from "../state/FilterProvider";
-import { Button, Page, SectionCard, StatCard } from "../theme/UiKit";
-import { senderColors } from "../theme/senderColor";
+import { Button, Page, StatCard } from "../theme/UiKit";
 import type { ParsedMessage } from "../types/chat";
 import type { DateOrder } from "../parse/parseExport";
 import { EntireExportStrip } from "./EntireExportStrip";
+import { GroupHealthSection } from "./GroupHealthSection";
 import { HeatmapSection } from "./HeatmapSection";
 import { RankSection } from "./RankSection";
+import { SessionSection } from "./SessionSection";
+import { TalkSection } from "./TalkSection";
 import { VolumeSection } from "./VolumeSection";
 import "./dashboard.css";
 
@@ -52,8 +54,6 @@ export function Dashboard({
   const medianReply =
     replies.length >= MIN_REPLY_SAMPLE ? median(replies.map((e) => e.delaySeconds)) : null;
   const isPair = fileSenders.length === 2;
-  const starts = isPair ? sessionStarts(filtered) : [];
-  const colors = senderColors(fileSenders);
 
   const span = dateSpan(messages);
   const years = span
@@ -119,6 +119,12 @@ export function Dashboard({
                 : `across ${replies.length.toLocaleString()} replies`
             }
             metric="medianReply"
+          />
+          <StatCard
+            label="Longest silence"
+            value={formatSeconds(longestSilenceSeconds(filtered))}
+            hint="biggest gap between two messages"
+            metric="longestSilence"
             align="end"
           />
         </div>
@@ -134,35 +140,14 @@ export function Dashboard({
           <RankSection messages={filtered} />
         </div>
 
+        <TalkSection messages={filtered} />
+
         <HeatmapSection messages={filtered} />
 
-        {isPair && starts.length > 0 ? (
-          <SectionCard
-            title="Who starts conversations"
-            description="After a quiet stretch, who sends the first message."
-            metric="sessionStarts"
-          >
-            <div className="stat-row stat-row-tight">
-              {starts.map((row) => (
-                <div className="person" key={row.sender}>
-                  <span className="person-head">
-                    <span
-                      className="person-swatch"
-                      style={{ background: `var(${colors.get(row.sender) ?? "--series-1"})` }}
-                    />
-                    <span className="person-name" title={row.sender}>
-                      {row.sender}
-                    </span>
-                  </span>
-                  <span className="person-value">{Math.round(row.share * 100)}%</span>
-                  <span className="person-meta">
-                    {row.n.toLocaleString()} of{" "}
-                    {starts.reduce((sum, s) => sum + s.n, 0).toLocaleString()} conversations
-                  </span>
-                </div>
-              ))}
-            </div>
-          </SectionCard>
+        <SessionSection messages={filtered} fileSenderCount={fileSenders.length} />
+
+        {fileSenders.length >= 3 ? (
+          <GroupHealthSection messages={filtered} fileMessages={messages} />
         ) : null}
 
         <ContentSection messages={filtered} />

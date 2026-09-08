@@ -31,6 +31,8 @@ export interface FilterState {
   hourEnd: number;   // 0–23 inclusive
   replyWindowMinutes: 30 | 120 | 720 | 1440;
   stopwordLang: string | null;
+  /** When true, drop parsed emojis before scoring long / outlier messages. */
+  stripEmojisForLength: boolean;
 }
 
 export const defaultFilter = (): FilterState => ({
@@ -43,4 +45,5 @@ export const defaultFilter = (): FilterState => ({
   hourEnd: 23,
   replyWindowMinutes: 120,
   stopwordLang: "english",
+  stripEmojisForLength: true,
 });

@@ -87,6 +87,14 @@ describe("shared filter behaviour", () => {
     expect(samples(narrowReplies)).toBeLessThan(samples(wideReplies));
   });
 
+  it("keeps the emoji-strip toggle out of message counts", () => {
+    const stripped = filterMessages(sample, { ...defaultFilter(), stripEmojisForLength: true });
+    const kept = filterMessages(sample, { ...defaultFilter(), stripEmojisForLength: false });
+    expect(stripped.length).toBe(kept.length);
+    expect(stripped).toEqual(kept);
+    expect(volumeTrend(stripped, "month")).toEqual(volumeTrend(kept, "month"));
+  });
+
   it("keeps stop-word language out of message counts", () => {
     const english = filterMessages(sample, { ...defaultFilter(), stopwordLang: "english" });
     const none = filterMessages(sample, { ...defaultFilter(), stopwordLang: null });

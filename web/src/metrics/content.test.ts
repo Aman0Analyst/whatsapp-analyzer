@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contentRates, topDomains, topEmojis } from "./content";
+import { contentRates, topDomains, topEmojis, topEmojisBySender } from "./content";
 import { event, msg } from "./fixtures";
 
 describe("topEmojis", () => {
@@ -21,6 +21,38 @@ describe("topEmojis", () => {
     const msgs = [msg("Ada", "10:00", "hi", { emojis: ["🙏", "👌", "🎉"] })];
     expect(topEmojis(msgs, 2)).toHaveLength(2);
     expect(topEmojis([msg("Ada", "10:00")], 5)).toEqual([]);
+  });
+});
+
+describe("topEmojisBySender", () => {
+  it("counts occurrences per sender, skips empty senders, and sorts by total", () => {
+    const rows = topEmojisBySender(
+      [
+        msg("Ada", "10:00", "hi", { emojis: ["🙏", "🙏", "🎉"] }),
+        msg("Bob", "10:01", "yo", { emojis: ["👌"] }),
+        msg("Cara", "10:02", "plain"),
+      ],
+      10,
+    );
+    expect(rows).toEqual([
+      {
+        sender: "Ada",
+        emojis: [
+          { emoji: "🙏", n: 2 },
+          { emoji: "🎉", n: 1 },
+        ],
+      },
+      { sender: "Bob", emojis: [{ emoji: "👌", n: 1 }] },
+    ]);
+  });
+
+  it("honours the per-sender limit", () => {
+    const rows = topEmojisBySender(
+      [msg("Ada", "10:00", "hi", { emojis: ["🙏", "🙏", "👌", "🎉"] })],
+      2,
+    );
+    expect(rows[0]?.emojis).toHaveLength(2);
+    expect(rows[0]?.emojis[0]).toEqual({ emoji: "🙏", n: 2 });
   });
 });
 

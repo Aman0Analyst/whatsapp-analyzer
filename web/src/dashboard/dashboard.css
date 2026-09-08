@@ -20,6 +20,13 @@
   align-items: start;
 }
 
+/* Two equal halves, e.g. who opens a conversation next to who ends it. */
+.split-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+}
+
 .page > .card,
 .page > section.card {
   margin-bottom: var(--space-4);
@@ -84,6 +91,29 @@
   color: var(--danger);
 }
 
+/* ---------- closing note ---------- */
+
+/* One quiet sentence that finishes a section's story. */
+.section-note {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  max-width: 62ch;
+}
+
+.section-note-flush {
+  margin-top: 0;
+}
+
+.chip-row {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+}
+
 /* ---------- callout ---------- */
 
 .callout {
@@ -103,6 +133,10 @@
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-5);
+}
+
+.person-grid-flush {
+  margin-bottom: 0;
 }
 
 .person {
@@ -158,6 +192,10 @@
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-5);
+}
+
+.rate-tiles-flush {
+  margin-bottom: 0;
 }
 
 .rate-tile {
