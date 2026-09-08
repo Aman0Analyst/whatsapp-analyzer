@@ -6,10 +6,64 @@ import io
 import sys
 from collections import Counter
 import emoji
+import unicodedata
 
 # imported from current directory
 from chatline import Chatline
 from font_color import Color
+
+LETTER_CATEGORY = "L"
+MAX_STRETCH_QUERY = 64
+
+
+def collapse_letter_runs(raw):
+    collapsed = []
+    previous = None
+    for char in raw.lower():
+        if unicodedata.category(char)[0] != LETTER_CATEGORY:
+            continue
+        if char == previous:
+            continue
+        collapsed.append(char)
+        previous = char
+    return "".join(collapsed)
+
+
+def has_stretched_run(raw):
+    previous = None
+    run = 0
+    for char in raw.lower():
+        if unicodedata.category(char)[0] != LETTER_CATEGORY:
+            previous = None
+            run = 0
+            continue
+        if char == previous:
+            run += 1
+            if run >= 3:
+                return True
+        else:
+            previous = char
+            run = 1
+    return False
+
+
+def find_stretched_words(messages, query):
+    trimmed = query.strip()[:MAX_STRETCH_QUERY]
+    collapsed = collapse_letter_runs(trimmed)
+    if not collapsed:
+        return collapsed, []
+    counts = Counter()
+    for row in messages:
+        if row.line_type != "Chat" or row.is_deleted_chat:
+            continue
+        for raw in row.words:
+            if collapse_letter_runs(raw) != collapsed:
+                continue
+            if not has_stretched_run(raw):
+                continue
+            counts[raw.lower()] += 1
+    variants = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    return collapsed, variants
 
 
 """
@@ -55,6 +109,13 @@ parser.add_argument(
     required=False,
     help="Keep emojis when measuring long messages (ignored by default).",
     action="store_true"
+)
+
+parser.add_argument(
+    '--stretch',
+    required=False,
+    metavar='WORD',
+    help="Find stretched spellings of WORD (Jaaaan for jaan). Not a regular expression."
 )
 
 args = parser.parse_args()
@@ -233,7 +294,7 @@ def build_sessions(messages, gap_minutes=45):
         last['participants'].add(message.sender)
     return sessions
 
-def print_metrics_wave(messages, strip_emojis=True):
+def print_metrics_wave(messages, strip_emojis=True, stretch_query=None):
     chats = [
         row for row in messages
         if row.line_type == 'Chat' and not row.is_deleted_chat and row.sender and row.timestamp
@@ -380,6 +441,18 @@ def print_metrics_wave(messages, strip_emojis=True):
         print("{} | {}/{} questions | {:.1f}%".format(
             sender, questions[sender], count, 100 * questions[sender] / count
         ))
+
+    if stretch_query:
+        metric_header("Stretched Words")
+        collapsed, variants = find_stretched_words(messages, stretch_query)
+        if not collapsed:
+            print("Query has no letters to match")
+        elif not variants:
+            print("No stretched spellings of \"{}\"".format(stretch_query.strip()))
+        else:
+            total = sum(count for _, count in variants)
+            print("Matches for \"{}\"\t: {}".format(stretch_query.strip(), total))
+            printBarChart(variants[:20], fill=Color.blue("█"))
 
     metric_header("Reply Times (2-hour window)")
     turns = []
@@ -590,4 +663,8 @@ print('Less [{}{}{}{}{}] More'.format(
 print()
 printCalendar(dict(data))
 
-print_metrics_wave(parsed_lines, strip_emojis=not args.keep_emoji_in_length)
+print_metrics_wave(
+    parsed_lines,
+    strip_emojis=not args.keep_emoji_in_length,
+    stretch_query=args.stretch,
+)

@@ -73,6 +73,12 @@ export const METRIC_HELP: Record<string, MetricHelp> = {
     how: "Every filtered message is placed in a weekday × hour cell. Darker means busier, scaled against the single busiest cell.",
     caveat: "Uses your device's timezone, which may differ from where the messages were sent.",
   },
+  stretchedWords: {
+    title: "Stretched words",
+    what: "How often people drag out a word you type — Jaaaan for jaan, gooood for good.",
+    how: "Letters are lowercased and consecutive repeats are collapsed to one. A token matches if that collapsed form equals your query's, and the original has at least three of the same letter in a row. The query is never run as a regular expression.",
+    caveat: "Plain spellings without a stretched run are left out. Searching good will not count good or god, only the elongated ones.",
+  },
   topWords: {
     title: "Top words",
     what: "The words that come up most, once filler is removed.",

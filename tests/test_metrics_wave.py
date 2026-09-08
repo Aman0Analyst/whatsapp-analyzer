@@ -71,3 +71,21 @@ class TestMetricsWaveCli(TestCase):
         self.assertNotIn(emoji_heavy, stripped)
         self.assertIn(emoji_heavy, kept)
 
+    def test_stretch_flag_groups_drawn_out_spellings(self):
+        lines = [
+            "[1/1/2026, 10:00:00 am] Alice: Jaaaan Jaaaannnnn jaan",
+            "[1/1/2026, 10:01:00 am] Bob: goooodddd gggooood good god",
+        ]
+        jaan = self.run_analyzer(lines, "--stretch", "jaan")
+        good = self.run_analyzer(lines, "--stretch", "good")
+
+        self.assertIn("Stretched Words", jaan)
+        self.assertIn('Matches for "jaan"\t: 2', jaan)
+        self.assertIn("jaaaan", jaan)
+        self.assertIn("jaaaannnnn", jaan)
+        self.assertNotIn("Matches for \"jaan\"\t: 3", jaan)
+
+        self.assertIn('Matches for "good"\t: 2', good)
+        self.assertIn("goooodddd", good)
+        self.assertIn("gggooood", good)
+

@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { RankBars } from "../charts/RankBars";
 import { contentRates, topDomains, topEmojis, topEmojisBySender } from "../metrics/content";
 import { filterMessages } from "../metrics/filterMessages";
 import { longMessages } from "../metrics/outliers";
+import { findStretchedWords } from "../metrics/stretched";
 import { topWords } from "../metrics/words";
 import { useFilter } from "../state/FilterProvider";
 import { InfoTip, SectionCard, Select } from "../theme/UiKit";
@@ -43,6 +45,8 @@ export function ContentSection({ messages }: { messages: ParsedMessage[] }) {
   const domains = topDomains(kept, 8);
   const longest = longMessages(kept, { stripEmojis: filter.stripEmojisForLength });
   const rates = contentRates(kept);
+  const [stretchQuery, setStretchQuery] = useState("");
+  const stretched = findStretchedWords(kept, stretchQuery);
 
   const tiles = [
     { label: "Media", n: rates.attachments, rate: rates.attachmentRate },
@@ -130,6 +134,58 @@ export function ContentSection({ messages }: { messages: ParsedMessage[] }) {
             </div>
           ) : null}
         </div>
+      </div>
+
+      <div className="content-block stretch-block">
+        <div className="content-head">
+          <h3 className="subhead">
+            Stretched words
+            <InfoTip metric="stretchedWords" />
+          </h3>
+          <div className="field content-lang">
+            <label className="field-label" htmlFor="stretch-query">
+              Find a word
+            </label>
+            <input
+              id="stretch-query"
+              className="select"
+              type="text"
+              value={stretchQuery}
+              maxLength={64}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="e.g. jaan or good"
+              aria-label="Find stretched spellings of a word"
+              onChange={(event) => setStretchQuery(event.target.value)}
+            />
+          </div>
+        </div>
+        {stretchQuery.trim() === "" ? (
+          <p className="section-note section-note-flush">
+            Type a word to see drawn-out spellings of it in this range.
+          </p>
+        ) : stretched.collapsed === "" ? (
+          <p className="empty">That search has no letters to match.</p>
+        ) : stretched.total === 0 ? (
+          <p className="empty">No stretched spellings of that word in this range.</p>
+        ) : (
+          <>
+            <p className="section-note section-note-flush">
+              {stretched.total.toLocaleString()}{" "}
+              {stretched.total === 1 ? "match" : "matches"} for stretched “{stretchQuery.trim()}”
+            </p>
+            <ol className="mini-rank">
+              {stretched.variants.map((row) => (
+                <li className="mini-rank-row" key={row.word}>
+                  <span className="mini-rank-label" title={row.word}>
+                    {row.word}
+                  </span>
+                  <span className="mini-rank-value">{row.n.toLocaleString()}</span>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
       </div>
 
       {emojisBySender.length > 0 ? (

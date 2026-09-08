@@ -54,7 +54,7 @@ The Python CLI prints ranks and a heatmap to the terminal. It needs Python 3.9+ 
 git clone https://github.com/Aman0Analyst/whatsapp-analyzer.git
 cd whatsapp-analyzer
 uv sync
-uv run python whatsapp_analyzer.py chat_example.txt --stopword english
+uv run python whatsapp_analyzer.py your_chat.txt --stopword english
 ```
 
 | Flag | Meaning |
@@ -63,6 +63,7 @@ uv run python whatsapp_analyzer.py chat_example.txt --stopword english
 | `-s`, `--stopword` | Built-in stop-word list: `english`, `indonesian`, … (see `--help` for all 27) |
 | `-c`, `--customstopword` | Your own list instead — a raw text file, one word per line |
 | `-d`, `--debug` | Print how every line was parsed |
+| `--stretch WORD` | Find stretched spellings of WORD (Jaaaan for jaan). Not a regex |
 | `-h`, `--help` | Full usage |
 
 Stop words are common words (`the`, `a`, `in`, `yang`) that would otherwise win every word rank. The

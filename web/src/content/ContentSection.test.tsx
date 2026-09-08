@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { parseStopwords, topWords } from "../metrics/words";
 import { msg } from "../metrics/fixtures";
 import englishSrc from "./stopwords/english.txt?raw";
@@ -129,5 +130,33 @@ describe("ContentSection", () => {
   it("hides the reading list when there are too few messages to compare", () => {
     show([msg("Ada", "10:00", "short"), msg("Bob", "10:01", "also short")]);
     expect(screen.queryByText("Longest messages")).not.toBeInTheDocument();
+  });
+
+  it("finds stretched spellings of a word the user types", async () => {
+    const user = userEvent.setup();
+    const { container } = show([
+      msg("Ada", "10:00", "Jaaaan Jaaaannnnn"),
+      msg("Bob", "10:01", "jaan goooodddd gggooood good"),
+    ]);
+
+    const search = screen.getByRole("textbox", { name: /find stretched spellings of a word/i });
+    await user.type(search, "jaan");
+    const stretch = container.querySelector(".stretch-block") as HTMLElement;
+    expect(stretch).toHaveTextContent("2 matches for stretched “jaan”");
+    expect(stretch.querySelectorAll(".mini-rank-label").length).toBe(2);
+    expect(stretch).toHaveTextContent("jaaaan");
+    expect(stretch).toHaveTextContent("jaaaannnnn");
+    expect([...stretch.querySelectorAll(".mini-rank-label")].map((node) => node.textContent)).not.toContain(
+      "jaan",
+    );
+
+    await user.clear(search);
+    await user.type(search, "good");
+    expect(stretch).toHaveTextContent("2 matches for stretched “good”");
+    expect(stretch).toHaveTextContent("goooodddd");
+    expect(stretch).toHaveTextContent("gggooood");
+    expect([...stretch.querySelectorAll(".mini-rank-label")].map((node) => node.textContent)).not.toContain(
+      "good",
+    );
   });
 });
